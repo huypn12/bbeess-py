@@ -9,44 +9,54 @@ import numpy as np
 
 
 class AbcSmc(object):
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        prism_model_file_path: str,
+        verify_property_str: str,
+        observe_property_str: str,
+        particle_count: int,
+        pertubation_count: int,
+    ) -> None:
         super().__init__()
-        self.mc_trace = []
-
-        path = stormpy.examples.files.prism_pdtmc_die
-        prism_program = stormpy.parse_prism_program(path)
-        formula_str = "P=? [F s=7 & d=2]"
+        # PRISM model and one PCTL property
+        self.prism_program = stormpy.parse_prism_program(prism_model_file_path)
         properties = stormpy.parse_properties_for_prism_program(
-            formula_str, prism_program
+            verify_property_str + ";" + observe_property_str,
+            self.prism_program,
         )
-        property = properties[0]
-        model = stormpy.build_parametric_model(prism_program, properties)
-        print("Model supports parameters: {}".format(model.supports_parameters))
-        parameters = model.collect_probability_parameters()
-        assert len(parameters) == 2
+        self.verify_property = properties[0]
+        self.observe_property = properties[1]
+        self.model = stormpy.build_parametric_model(self.prism_program, properties)
+        self.model_parameters = self.model.collect_probability_parameters()
+        self.current_param_values = np.array(len(self.model_parameters), dtype=np.float)
+        self.instantiator = stormpy.pars.PDtmcInstantiator(self.model)
+        self.instantiated_model = None
+        # ABC-SMC configuration
+        self.param_space_sample = []
+        self.particle_count = 1000
+        self.pertubation_count = 1000
 
-        instantiator = stormpy.pars.PDtmcInstantiator(model)
+    def _instantiate_pmodel(self, params: np.array):
         point = dict()
-        for x in parameters:
-            print(x.name)
-            point[x] = stormpy.RationalRF(0.4)
-        instantiated_model = instantiator.instantiate(point)
-        result = stormpy.model_checking(instantiated_model, property)
-        print(result)
-
-    def _instantiate_pmodel(self):
-        pass
+        for i, p in enumerate(self.model_parameters):
+            point[p] = params[i]
+        self.instantiated_model = self.instantiator.instantiate(point)
 
     def _init(self):
-        # Sample model parameters from Uniform(0,1)
-        pass
+        sample_size = len(self.current_param_values)
+        sampled_params = np.random.uniform(0, 1, sample_size)
+        self.current_param_values = sampled_params
+        self._instantiate_pmodel(sampled_params)
 
     def _perturbate(self):
         # Draw new parameter from Normal distribution
         pass
 
-    def _transition(self):
+    def _distance(self):
         pass
+
+    def _step(self):
+        self._init()
 
     def _abc(self):
         pass
@@ -58,4 +68,4 @@ class AbcSmc(object):
         pass
 
     def run(self):
-        pass
+        self._init()
