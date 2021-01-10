@@ -1,3 +1,4 @@
+from examples.storm_pars_api import example_parametric_models_01
 from typing import List
 import stormpy
 import stormpy.core
@@ -60,26 +61,20 @@ class AbcSmc(object):
         self.current_param_values = sampled_params
         self._instantiate_pmodel(sampled_params)
 
-    def _perturbate(self):
-        # Draw new parameter from Normal distribution
-        pass
-
     @staticmethod
     def _distance(v1: np.array, v2: np.array) -> float:
-        """Distance between two vector
-
-        Args:
-            v1 (np.array): [description]
-            v2 (np.array): [description]
-
-        Returns:
-            float: [description]
-        """
+        """Distance between two vector"""
         return np.linalg.norm(v1 - v2)
 
     @staticmethod
     def _kernel(self, s1, s2, threshold):
-        return AbcSmc._distance(s1, s2) > threshold ? 1 : 0
+        return 1 if (AbcSmc._distance(s1, s2) > threshold) else 0
+
+    @staticmethod
+    def _perturbate(p) -> np.array:
+        """Draw new parameter from Normal distribution"""
+        # TODO: design perturbation function
+        pass
 
     def _abc(self):
         pass
@@ -96,7 +91,22 @@ class AbcSmc(object):
     def _step(self):
         self._init()
 
+    def _is_candidate_params_valid(self, p: np.array):
+        for _p in p:
+            if p < 0 or 1 < p:
+                return False
+        return True
+
     def run(self):
-        for i in range(0, self.particle_count):
-            for j in range(0, self.pertubation_count):
-                self._init()
+        for m in range(0, self.particle_count):
+            for i in range(0, self.pertubation_count):
+                candidate_params: np.array = None
+                if m == 0:
+                    param_dim = len(self.current_param_values)
+                    candidate_params = np.random.uniform(0, 1, param_dim)
+                else:
+                    candidate_params = AbcSmc._perturbate(self.current_param_values)
+                # Reject candidate if prior(candidate) == 0
+                if not self._is_candidate_params_valid(candidate_params):
+                    continue
+                # TODO: abc goes here
