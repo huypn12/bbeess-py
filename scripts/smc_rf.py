@@ -21,6 +21,7 @@ class SmcRf(object):
         observe_properties: List[str],
         particle_count: int,
         pertubation_count: int,
+        verify_threshold: float,
     ) -> None:
         super().__init__()
         # PRISM model and one PCTL property
@@ -51,6 +52,7 @@ class SmcRf(object):
         self.param_space_sample: List = []
         self.particle_count: int = particle_count
         self.pertubation_count: int = pertubation_count
+        self.verify_threshold: int = verify_threshold
 
     def _instantiate_pmodel(self, params: np.array):
         point = dict()
@@ -92,8 +94,10 @@ class SmcRf(object):
                     candidate_params = np.random.uniform(0, 1, param_dim)
                 else:
                     candidate_params = self._perturbate(self.current_param_values)
-                # Reject candidate if prior(candidate) == 0
                 if not self._is_candidate_params_valid(candidate_params):
+                    continue
+                llh = self._estimate_likelihood(candidate_params)
+                if llh < self.threshold:
                     continue
 
     def _estimate_likelihood(self, params: np.array):
