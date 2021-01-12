@@ -101,9 +101,6 @@ class SmcRf(object):
             point[p] = params[i]
         return float(self.verify_rf.evaluate(point))
 
-    def _step(self):
-        self._init()
-
     def _is_candidate_params_valid(self, p: np.array):
         for _p in p:
             if _p < 0 or _p > 1:
@@ -111,4 +108,5 @@ class SmcRf(object):
         return True
 
     def run(self):
-        pass
+        self._init()
+        self._smc()
