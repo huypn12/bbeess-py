@@ -9,6 +9,7 @@ black = "*"
 [packages]
 numpy = "*"
 scipy = "*"
+stormpy = {editable = true, git = "https://github.com/moves-rwth/stormpy.git"}
 
 [requires]
 python_version = "3.7"
