@@ -1,14 +1,10 @@
-from examples.storm_pars_api import example_parametric_models_01
-
 from typing import List
 import stormpy
 import stormpy.core
 import stormpy.pars
 
-import pycarl
-import pycarl.core
-
 import numpy as np
+import scipy as sp
 
 
 class SmcRf(object):
@@ -26,19 +22,19 @@ class SmcRf(object):
         super().__init__()
         # PRISM model and one PCTL property
         self.prism_program = stormpy.parse_prism_program(prism_model_file_path)
-        properties_str = ";".join([verify_property] + observe_properties)
-        properties = stormpy.parse_properties_for_prism_program(
-            properties_str,
+        props_str = ";".join([verify_property] + observe_properties)
+        props = stormpy.parse_properties_for_prism_program(
+            props_str,
             self.prism_program,
         )
-        self.model = stormpy.build_parametric_model(self.prism_program, properties)
+        self.model = stormpy.build_parametric_model(self.prism_program, props)
         self.model_parameters = self.model.collect_probability_parameters()
-        self.verify_property = properties[0]
+        self.verify_property = props[0]
         self.verify_rf = stormpy.model_checking(self.model, self.verify_property).at(
             self.model.initial_states[0]
         )
-        self.observe_properties = properties[1:]
-        self.observe_properties_rf = [
+        self.obs_props = props[1:]
+        self.obs_props_rf = [
             stormpy.model_checking(self.model, obs_prop).at(
                 self.model.initial_states[0]
             )
@@ -48,7 +44,7 @@ class SmcRf(object):
         self.instantiator = stormpy.pars.PDtmcInstantiator(self.model)
         self.instantiated_model = None
 
-        # ABC-SMC configuration
+        # SMC configuration
         self.param_space_sample: List = []
         self.particle_count: int = particle_count
         self.pertubation_count: int = pertubation_count
@@ -66,15 +62,6 @@ class SmcRf(object):
         self.current_param_values = sampled_params
         self._instantiate_pmodel(sampled_params)
 
-    @staticmethod
-    def _distance(v1: np.array, v2: np.array) -> float:
-        """Distance between two vector"""
-        return np.linalg.norm(v1 - v2)
-
-    @staticmethod
-    def _kernel(self, s1, s2, threshold):
-        return 1 if (SmcRf._distance(s1, s2) > threshold) else 0
-
     def _perturbate(self, param) -> np.array:
         """Draw new parameter from Normal distribution"""
         # TODO: properly designed perturbation function; proof of convergence/KL distance
@@ -87,7 +74,7 @@ class SmcRf(object):
         # Accepted point: points which satisfy the properties
         # Weight: likelihood to generate the observed data
         for m in range(0, self.particle_count):
-            for i in range(0, self.pertubation_count):
+            for _ in range(0, self.pertubation_count):
                 candidate_params: np.array = None
                 if m == 0:
                     param_dim = len(self.current_param_values)
@@ -96,11 +83,19 @@ class SmcRf(object):
                     candidate_params = self._perturbate(self.current_param_values)
                 if not self._is_candidate_params_valid(candidate_params):
                     continue
-                llh = self._estimate_likelihood(candidate_params)
-                if llh < self.threshold:
+                llh_obs = self._estimate_obs_llh(candidate_params)
+                llh_prop = self._estimate_prop_llh(candidate_params)
+                if llh_prop < self.threshold:
                     continue
+                self.trace.append({candidate_params: llh_obs})
 
-    def _estimate_likelihood(self, params: np.array):
+    def _estimate_obs_llh(self, params: np.array):
+        point = dict()
+        for i, p in enumerate(self.model_parameters):
+            point[p] = params[i]
+        return [float(rf.evaluate(point)) for rf in self.obs_props_rf]
+
+    def _estimate_sat_prob(self, params: np.array):
         point = dict()
         for i, p in enumerate(self.model_parameters):
             point[p] = params[i]
@@ -111,7 +106,7 @@ class SmcRf(object):
 
     def _is_candidate_params_valid(self, p: np.array):
         for _p in p:
-            if p < 0 or 1 < p:
+            if _p < 0 or _p > 1:
                 return False
         return True
 
