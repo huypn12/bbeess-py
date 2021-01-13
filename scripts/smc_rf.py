@@ -5,6 +5,7 @@ import stormpy.pars
 
 import numpy as np
 import scipy as sp
+from scipy.stats import multinomial as sp_multinomial
 
 
 class MyPrismProgram(object):
@@ -36,6 +37,7 @@ class SmcRf(object):
         self,
         prism_model_file: str,
         prism_props_file: str,
+        obs_data: List[int],
         particle_count: int,
         perturbation_count: int,
         check_threshold: float,
@@ -49,6 +51,9 @@ class SmcRf(object):
             self.my_prism_program.prism_props,
         )
         self.model_parameters = self.model.collect_probability_parameters()
+        self.instantiator = stormpy.pars.PDtmcInstantiator(self.model)
+        self.instantiated_model = None
+        # Properties for checking and observing
         self.check_prop = self.my_prism_program.prism_props[0]
         self.check_rf = stormpy.model_checking(self.model, self.check_prop).at(
             self.model.initial_states[0]
@@ -60,9 +65,8 @@ class SmcRf(object):
             )
             for obs_prop in self.obs_props
         ]
-        self.instantiator = stormpy.pars.PDtmcInstantiator(self.model)
-        self.instantiated_model = None
-
+        self.obs_data = obs_data
+        assert len(self.obs_data) == len(self.obs_rf)
         # SMC configuration
         self.param_space_sample: List = []
         self.particle_count: int = particle_count
@@ -84,10 +88,11 @@ class SmcRf(object):
 
     def _perturbate(self, param) -> np.array:
         # TODO: properly designed perturbation function; proof of convergence/KL distance
+        new_param = np.zeros(len(param))
         for i, p_i in enumerate(param):
             alpha = beta = 1 / p_i
-            param[i] = self.rng.beta(alpha, beta)
-        return param
+            new_param[i] = self.rng.beta(alpha, beta)
+        return new_param
 
     def _smc(self):
         # Accepted point: points which satisfy the properties
@@ -108,11 +113,16 @@ class SmcRf(object):
                     continue
                 self.param_space_sample.append((candidate_param, llh_obs))
 
+    def _compute_llh_multinomial(self, P, data):
+        N = sum(data)
+        return np.sum(np.log(sp_multinomial(N, P).pmf(data)))
+
     def _estimate_obs_llh(self, param: np.array):
         point = dict()
         for i, p in enumerate(self.model_parameters):
             point[p] = stormpy.RationalRF(param[i])
-        return [float(rf.evaluate(point)) for rf in self.obs_rf]
+        P = [float(rf.evaluate(point)) for rf in self.obs_rf]
+        return self._compute_llh_multinomial(P, self.obs_data)
 
     def _estimate_check_llh(self, param: np.array):
         point = dict()
@@ -142,9 +152,10 @@ def main():
     smc_rf = SmcRf(
         prism_model_file=prism_model_file,
         prism_props_file=prism_props_file,
+        obs_data=[30, 60],
         particle_count=100,
         perturbation_count=10,
-        check_threshold=0.01,
+        check_threshold=0.0,
     )
     smc_rf.run()
 
