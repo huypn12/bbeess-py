@@ -7,6 +7,14 @@ import numpy as np
 import scipy as sp
 from scipy.stats import multinomial as sp_multinomial
 
+"""
+        target prop rf | obs prop lh
+smc            1               1
+abc-smc        1               0
+smc2           0               1
+abc-smc2       0               0
+"""
+
 
 class MyPrismProgram(object):
     def __init__(
@@ -136,10 +144,12 @@ class SmcRf(object):
                 return False
         return True
 
+    def get_result(self):
+        return self.param_space_sample
+
     def run(self):
         self._init()
         self._smc()
-        print(self.param_space_sample)
 
 
 def main():
@@ -158,6 +168,9 @@ def main():
         check_threshold=0.0,
     )
     smc_rf.run()
+    res = smc_rf.get_result()
+    for point in res:
+        print(point)
 
 
 if __name__ == "__main__":
