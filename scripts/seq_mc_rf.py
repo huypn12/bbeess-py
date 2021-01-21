@@ -7,13 +7,8 @@ import numpy as np
 import scipy as sp
 from scipy.stats import multinomial as sp_multinomial
 
-"""
-        target prop rf | obs prop lh
-smc            1               1
-abc-smc        1               0
-smc2           0               1
-abc-smc2       0               0
-"""
+import matplotlib.pyplot as plt
+from matplotlib import cm
 
 
 class MyPrismProgram(object):
@@ -36,6 +31,15 @@ class MyPrismProgram(object):
         with open(self.prism_props_file, "r") as fptr:
             lines = fptr.readlines()
         return ";".join(lines)
+
+
+"""
+        target prop rf | obs prop lh
+smc            1               1
+abc-smc        1               0
+smc2           0               1
+abc-smc2       0               0
+"""
 
 
 class SmcRf(object):
@@ -169,8 +173,26 @@ def main():
     )
     smc_rf.run()
     res = smc_rf.get_result()
+    x = []
+    y = []
+    z = []
     for point in res:
         print(point)
+        pq = point[0]
+        x.append(pq[0])
+        y.append(pq[1])
+        z.append(point[1])
+
+    fig = plt.figure(figsize=(6, 6))
+    ax = fig.add_subplot(111)
+    ax.set_title("Zeroconf v4, params (p,q)", fontsize=14)
+    ax.set_xlabel("p", fontsize=12)
+    ax.set_ylabel("q", fontsize=12)
+    ax.grid(True, linestyle="-", color="0.75")
+
+    points = ax.scatter(x, y, s=20, c=z, marker="o", cmap=cm.jet)
+    plt.colorbar(points)
+    plt.savefig("zeroconf4-pq.png")
 
 
 if __name__ == "__main__":
