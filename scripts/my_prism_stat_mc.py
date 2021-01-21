@@ -7,6 +7,10 @@ class PrismSmcWrapper(object):
         self.prism_path = ""
         self.prism_cmd = "prism"
         self.prism_args = []
+        self.result = ""
 
     def run(self):
-        pass
+        return self._simulate()
+
+    def get_result(self):
+        return
