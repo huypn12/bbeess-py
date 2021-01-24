@@ -195,5 +195,62 @@ def main():
     plt.savefig("zeroconf4-pq.png")
 
 
+def main2():
+    prism_model_file = (
+        "/home/huypn12/Work/UniKonstanz/MCSS/bbeess-py/examples/data/die.pm"
+    )
+    prism_props_file = (
+        "/home/huypn12/Work/UniKonstanz/MCSS/bbeess-py/examples/data/die.pctl"
+    )
+    smc_rf = SmcRf(
+        prism_model_file=prism_model_file,
+        prism_props_file=prism_props_file,
+        obs_data=[30, 60, 50, 32, 55, 44],
+        particle_count=100,
+        perturbation_count=10,
+        check_threshold=0.0,
+    )
+    smc_rf.run()
+    res = smc_rf.get_result()
+    x = []
+    z = []
+    for point in res:
+        print(point)
+        x.append(point[0])
+        z.append(point[1])
+
+    fig = plt.figure(figsize=(6, 6))
+    ax = fig.add_subplot(111)
+    ax.set_title("Knuth die, params (p)", fontsize=14)
+    ax.set_xlabel("p", fontsize=12)
+    ax.set_ylabel("q", fontsize=12)
+    ax.grid(True, linestyle="-", color="0.75")
+
+    points = ax.scatter(x, z, s=20, c=z, marker="o", cmap=cm.jet)
+    plt.colorbar(points)
+    plt.savefig("die-p.png")
+
+
+def main3():
+    prism_model_file = "/home/huypn12/Work/UniKonstanz/MCSS/bbeess-py/examples/data/multi_sync_3_bees.pm"
+    prism_props_file = "/home/huypn12/Work/UniKonstanz/MCSS/bbeess-py/examples/data/multi_sync_3_bees.pctl"
+    smc_rf = SmcRf(
+        prism_model_file=prism_model_file,
+        prism_props_file=prism_props_file,
+        obs_data=[30, 60, 50, 44],
+        particle_count=100,
+        perturbation_count=10,
+        check_threshold=0.0,
+    )
+    smc_rf.run()
+    res = smc_rf.get_result()
+    theta = []
+    llh = []
+    for point in res:
+        print(point)
+        theta.append(point[0])
+        llh.append(point[1])
+
+
 if __name__ == "__main__":
-    main()
+    main3()

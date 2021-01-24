@@ -36,14 +36,12 @@ def example_parametric_models_01():
     result = stormpy.model_checking(model, properties[0])
     rf = result.at(initial_state)
     print("Rational function of the desired property {}".format(rf))
-    rational = rf.evaluate(point)
     print(float(rf.evaluate(point)))
 
     instantiator = stormpy.pars.PDtmcInstantiator(model)
-
     instantiated_model = instantiator.instantiate(point)
     result = stormpy.model_checking(instantiated_model, properties[0])
-    print(result)
+    print(result.at(0))
 
 
 if __name__ == "__main__":

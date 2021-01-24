@@ -1,6 +1,8 @@
 // Knuth's model of a fair die using only fair coins
 dtmc
 
+const double p;
+
 module die
 
 	// local state
@@ -8,13 +10,13 @@ module die
 	// value of the dice
 	d : [0..6] init 0;
 	
-	[] s=0 -> 0.5 : (s'=1) + 0.5 : (s'=2);
-	[] s=1 -> 0.5 : (s'=3) + 0.5 : (s'=4);
-	[] s=2 -> 0.5 : (s'=5) + 0.5 : (s'=6);
-	[] s=3 -> 0.5 : (s'=1) + 0.5 : (s'=7) & (d'=1);
-	[] s=4 -> 0.5 : (s'=7) & (d'=2) + 0.5 : (s'=7) & (d'=3);
-	[] s=5 -> 0.5 : (s'=7) & (d'=4) + 0.5 : (s'=7) & (d'=5);
-	[] s=6 -> 0.5 : (s'=2) + 0.5 : (s'=7) & (d'=6);
+	[] s=0 -> p : (s'=1) + (1-p) : (s'=2);
+	[] s=1 -> p : (s'=3) + (1-p) : (s'=4);
+	[] s=2 -> p : (s'=5) + (1-p) : (s'=6);
+	[] s=3 -> p : (s'=1) + (1-p) : (s'=7) & (d'=1);
+	[] s=4 -> p : (s'=7) & (d'=2) + (1-p) : (s'=7) & (d'=3);
+	[] s=5 -> p : (s'=7) & (d'=4) + (1-p) : (s'=7) & (d'=5);
+	[] s=6 -> p : (s'=2) + (1-p) : (s'=7) & (d'=6);
 	[] s=7 -> 1: (s'=7);
 	
 endmodule
@@ -29,4 +31,4 @@ label "three" = s=7&d=3;
 label "four" = s=7&d=4;
 label "five" = s=7&d=5;
 label "six" = s=7&d=6;
-label "end" = s=7;
+label "done" = s=7;
