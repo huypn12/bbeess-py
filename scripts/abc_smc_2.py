@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple, Dict
 import stormpy
 import stormpy.core
 import stormpy.pars
@@ -11,28 +11,8 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 
 from scripts.prism_stats_mc import PrismStatsMc
-
-
-class MyPrismProgram(object):
-    def __init__(
-        self,
-        prism_model_file: str,
-        prism_props_file: str,
-    ) -> None:
-        super().__init__()
-        self.prism_model_file: str = prism_model_file
-        self.prism_props_file: str = prism_props_file
-        self.prism_program = stormpy.parse_prism_program(self.prism_model_file)
-        props_str = self._load_props_file()
-        self.prism_props = stormpy.parse_properties_for_prism_program(
-            props_str, self.prism_program
-        )
-
-    def _load_props_file(self):
-        lines = []
-        with open(self.prism_props_file, "r") as fptr:
-            lines = fptr.readlines()
-        return ";".join(lines)
+from scripts.my_prism_program import MyPrismProgram
+from scripts.my_config import MyConfig
 
 
 class AbcSmc2(object):
@@ -60,26 +40,22 @@ class AbcSmc2(object):
         self.instantiated_model = None
         # Properties for checking and observing
         self.check_prop = self.my_prism_program.prism_props[0]
-        self.check_rf = stormpy.model_checking(self.model, self.check_prop).at(
-            self.model.initial_states[0]
-        )
         self.obs_props = self.my_prism_program.prism_props[1:]
-        self.obs_rf = [
-            stormpy.model_checking(self.model, obs_prop).at(
-                self.model.initial_states[0]
-            )
-            for obs_prop in self.obs_props
-        ]
-        self.obs_data = obs_data
-        assert len(self.obs_data) == len(self.obs_rf)
+        self.obs_data: np.array = np.array(obs_data)
+        self.obs_data_stats: np.array = np.array(obs_data)
         # Sequential Monte Carlo configuration
-        self.param_space_sample: List = []
+        self.param_space_sample: List[Tuple[np.array, float]] = []
         self.particle_count: int = particle_count
         self.perturbation_count: int = perturbation_count
         self.check_threshold: int = check_threshold
         self.current_param = np.zeros(len(self.model_parameters), dtype=np.float)
         # Statistical model checking configuration
-        self.simulator: PrismStatsMc
+        self.simulator: PrismStatsMc = PrismStatsMc(
+            prism_exec=MyConfig.prism_exec(),
+            model_file=prism_model_file,
+            property_file=prism_props_file,
+        )
+        self.state_mapping: Dict[int, List[str]]: {}
 
     def _instantiate_pmodel(self, param: np.array):
         point = dict()
@@ -92,6 +68,8 @@ class AbcSmc2(object):
         sampled_param = np.random.uniform(0, 1, sample_size)
         self.current_param = sampled_param
         self._instantiate_pmodel(sampled_param)
+        data_sum: int = sum(self.obs_data)
+        self.obs_data_stats: np.array = self.obs_data * 1.0 / data_sum
 
     def _perturbate(self, param) -> np.array:
         # TODO: properly designed perturbation function; proof of convergence/KL distance
@@ -120,11 +98,28 @@ class AbcSmc2(object):
                     continue
                 self.param_space_sample.append((candidate_param, llh_obs))
 
-    def _compute_llh_multinomial(self, P, data):
-        N = sum(data)
-        return np.sum(np.log(sp_multinomial(N, P).pmf(data)))
+    def _simulate_obs(self, param: np.array):
+        point = dict()
+        for i, p in enumerate(self.model_parameters):
+            point[p] = stormpy.RationalRF(param[i])
+        instantiated_model = self.instantiator.instantiate(point)
+        simulator = stormpy.simulator.create_simulator(instantiated_model, seed=42)
+        simulator.set_observation_mode(
+            stormpy.simulator.SimulatorObservationMode.PROGRAM_LEVEL
+        )
+        final_outcomes = dict()
+        for n in range(1000):
+            observation = None
+            while not simulator.is_done():
+                observation, _ = simulator.step()  # reward in place hodler
+            if observation not in final_outcomes:
+                final_outcomes[observation] = 1
+            else:
+                final_outcomes[observation] += 1
+            simulator.restart()
 
     def _estimate_obs_llh(self, param: np.array):
+        # Storm model simulation
         point = dict()
         for i, p in enumerate(self.model_parameters):
             point[p] = stormpy.RationalRF(param[i])
@@ -132,10 +127,7 @@ class AbcSmc2(object):
         return self._compute_llh_multinomial(P, self.obs_data)
 
     def _estimate_check_llh(self, param: np.array):
-        point = dict()
-        for i, p in enumerate(self.model_parameters):
-            point[p] = stormpy.RationalRF(param[i])
-        return float(self.check_rf.evaluate(point))
+        self.prism
 
     def _is_candidate_params_valid(self, p: np.array):
         for _p in p:
@@ -205,6 +197,7 @@ def main2():
     prism_model_file = (
         "/home/huypn12/Work/UniKonstanz/MCSS/bbeess-py/examples/data/die.pm"
     )
+
     prism_props_file = (
         "/home/huypn12/Work/UniKonstanz/MCSS/bbeess-py/examples/data/die.pctl"
     )
