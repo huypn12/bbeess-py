@@ -20,5 +20,5 @@ module zeroconf4
 	
 endmodule
 
-label "ok" = (s=8)
-label "err" = (s=6)
+label "ok" = s=8
+label "err" = s=6

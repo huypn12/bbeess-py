@@ -43,6 +43,7 @@ class PrismStatsMc(object):
             universal_newlines=True,
         )
         stdout, stderr = process.communicate()
+        print(stdout)
         assert not stderr
         self.exec_output = stdout
 

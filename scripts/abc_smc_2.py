@@ -228,10 +228,10 @@ def main2():
         prism_model_file=prism_model_file,
         prism_props_file=prism_props_file,
         obs_labels=["one", "two", "three", "four", "five", "six"],
-        obs_data=[30, 60, 50, 32, 55, 44],
-        particle_count=100,
-        perturbation_count=10,
-        check_threshold=0.2,
+        obs_data=[60, 60, 60, 60, 60, 60],
+        particle_count=10,
+        perturbation_count=1,
+        check_threshold=0.01,
     )
     smc_rf.run()
     res = smc_rf.get_result()
