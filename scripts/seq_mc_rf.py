@@ -151,9 +151,20 @@ class SmcRf(object):
     def get_result(self):
         return self.param_space_sample
 
+    def get_current_param(self):
+        return self.current_param
+
+    def model_params_to_prism_cmd_args(self, param: np.array):
+        dims = []
+        for i, p in enumerate(self.model_parameters):
+            dim_str = str(p) + "=" + str(param[i])
+            dims.append(dim_str)
+        return ",".join(dims)
+
     def run(self):
         self._init()
         self._smc()
+        print(self.model_params_to_prism_cmd_args(self.current_param))
 
 
 def main():
@@ -169,7 +180,7 @@ def main():
         obs_data=[30, 60],
         particle_count=100,
         perturbation_count=10,
-        check_threshold=0.0,
+        check_threshold=0.1,
     )
     smc_rf.run()
     res = smc_rf.get_result()
@@ -247,9 +258,23 @@ def main3():
     theta = []
     llh = []
     for point in res:
-        print(point)
+        # print(point)
         theta.append(point[0])
         llh.append(point[1])
+    x = [p[0] for p in theta]
+    y = [p[1] for p in theta]
+    z = [p[2] for p in theta]
+
+    fig = plt.figure(figsize=(6, 6))
+    ax = fig.add_subplot(111, projection="3d")
+    ax.set_title("multi params, 3 bees, sync", fontsize=14)
+    ax.set_xlabel("p", fontsize=12)
+    ax.set_ylabel("q", fontsize=12)
+    ax.grid(True, linestyle="-", color="0.75")
+
+    points = ax.scatter(x, y, z, s=20, c=llh, marker="o", cmap=cm.jet)
+    plt.colorbar(points)
+    plt.savefig("multi-sync-3.png")
 
 
 if __name__ == "__main__":
