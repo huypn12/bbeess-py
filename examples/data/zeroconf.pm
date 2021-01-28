@@ -19,3 +19,6 @@ module zeroconf4
 	[] s=8 -> (s'=8);
 	
 endmodule
+
+label "ok" = (s=8)
+label "err" = (s=6)

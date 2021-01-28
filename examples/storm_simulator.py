@@ -22,7 +22,11 @@ def create_model():
     options.set_build_state_valuations()
     model = stormpy.build_parametric_model(prism_program)
     for state in model.states:
-        print(str(state.id) + " : " + str(state.labels if state.labels else ""))
+        print(
+            str(state.id)
+            + " : "
+            + str([l for l in state.labels] if state.labels else "")
+        )
     parameters = model.collect_probability_parameters()
     param = [0.3, 0.4, 0.5]
     point = dict()

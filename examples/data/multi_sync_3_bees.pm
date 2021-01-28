@@ -26,10 +26,10 @@ module multi_param_bee_agents_3
        []   a0 = 1 & a1 = 1 & a2 = -1 & b = 0  -> 1.0*(1-(r_2 - r_1)/(1 - r_1)): (a0'=1) & (a1'=1) & (a2'=-2) + 1.0* ((r_2 - r_1)/(1 - r_1)): (a0'=1) & (a1'=1) & (a2'=1);
 endmodule 
 
-label "bscc_1" = (a0=0)&(a1=0)&(a2=0)&(b=1);
-label "bscc_2" = (a0=1)&(a1=0)&(a2=0)&(b=1);
-label "bscc_3" = (a0=1)&(a1=1)&(a2=0)&(b=1);
-label "bscc_4" = (a0=1)&(a1=1)&(a2=1)&(b=1);
+label "bscc_1" = a0=0 & a1=0 & a2=0 & b=1 ;
+label "bscc_2" = a0=1 & a1=0 & a2=0 & b=1 ;
+label "bscc_3" = a0=1 & a1=1 & a2=0 & b=1 ;
+label "bscc_4" = a0=1 & a1=1 & a2=1 & b=1 ;
 
 rewards "mean" 
        a0 = 0 & a1 = 0 & a2 = 0:0;
