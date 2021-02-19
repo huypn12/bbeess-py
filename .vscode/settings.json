@@ -1,0 +1,5 @@
+{
+    "python.pythonPath": "/home/huypn12/.local/share/virtualenvs/bbeess-py-LLYwjS-1/bin/python",
+    "python.languageServer": "Pylance",
+    "python.formatting.provider": "black"
+}
