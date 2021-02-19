@@ -90,10 +90,11 @@ class PrismStatsMc(object):
 
 
 def main():
+
     stats_mc = PrismStatsMc(
-        prism_exec="/home/huypn12/Work/UniKonstanz/MCSS/bbeess-py/third_party/prism-4.6-linux64/bin/prism",
-        model_file="/home/huypn12/Work/UniKonstanz/MCSS/bbeess-py/examples/data/die.pm",
-        property_file="/home/huypn12/Work/UniKonstanz/MCSS/bbeess-py/examples/data/die.pctl",
+        prism_exec="/mnt/home/huypn12/repos/bbeess-py/third_party/prism-4.6-linux64/bin/prism",
+        model_file="/mnt/home/huypn12/repos/bbeess-py/examples/data/die.pm",
+        property_file="/mnt/home/huypn12/repos/MCSS/bbeess-py/examples/data/die.pctl",
         sim_path_len=1000,
         sim_confidence=0.95,
         sim_samples=1000,

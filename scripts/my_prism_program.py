@@ -17,6 +17,7 @@ class MyPrismProgram(object):
         self.prism_props: str = stormpy.parse_properties_for_prism_program(
             props_str, self.prism_program
         )
+        stormpy.parse_properties
 
     def _load_props_file(self) -> str:
         lines = []
