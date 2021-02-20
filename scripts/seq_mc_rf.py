@@ -32,16 +32,6 @@ class MyPrismProgram(object):
             lines = fptr.readlines()
         return ";".join(lines)
 
-
-"""
-        target prop rf | obs prop lh
-smc            1               1
-abc-smc        1               0
-smc2           0               1
-abc-smc2       0               0
-"""
-
-
 class SmcRf(object):
     """In case of likelihood can be cheaply calculated (closed form solution of the property is known)"""
 

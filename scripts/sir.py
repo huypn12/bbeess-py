@@ -33,15 +33,6 @@ class MyPrismProgram(object):
         return ";".join(lines)
 
 
-"""
-        target prop rf | obs prop lh
-smc            1               1
-abc-smc        1               0
-smc2           0               1
-abc-smc2       0               0
-"""
-
-
 class SmcRf(object):
     """In case of likelihood can be cheaply calculated (closed form solution of the property is known)"""
 
@@ -105,6 +96,7 @@ class SmcRf(object):
         epsilon: float = 1e-6
         while sum(new_param) < epsilon:
             new_param = np.random.uniform(0, 5, len(param))
+        print(new_param)
         return new_param
 
     def _smc(self):
@@ -164,8 +156,8 @@ class SmcRf(object):
 
 
 def simulate_data(param: List[float]):
-    prism_model_file = "/mnt/home/huypn12/repos/bbeess-py/examples/data/sir_310.pm"
-    prism_props_file = "/mnt/home/huypn12/repos/bbeess-py/examples/data/sir_310.pctl"
+    prism_model_file = "/mnt/storage0/huypn12/repos/bbeess-py/examples/data/sir_310.pm"
+    prism_props_file = "/mnt/storage0/huypn12/repos/bbeess-py/examples/data/sir_310.pctl"
     smc_rf = SmcRf(
         prism_model_file=prism_model_file,
         prism_props_file=prism_props_file,
@@ -179,29 +171,27 @@ def simulate_data(param: List[float]):
         point[p] = stormpy.RationalRF(param[i])
     print(point)
     P = [float(rf.evaluate(point)) for rf in smc_rf.obs_rf]
-    print(P)
     sample = np.random.multinomial(100, P)
     print(sample)
     return sample
 
 
 def main3(data: List[int]):
-    prism_model_file = "/mnt/home/huypn12/repos/bbeess-py/examples/data/sir_310.pm"
-    prism_props_file = "/mnt/home/huypn12/repos/bbeess-py/examples/data/sir_310.pctl"
+    prism_model_file = "/mnt/storage0/huypn12/repos/bbeess-py/examples/data/sir_310.pm"
+    prism_props_file = "/mnt/storage0/huypn12/repos/bbeess-py/examples/data/sir_310.pctl"
     smc_rf = SmcRf(
         prism_model_file=prism_model_file,
         prism_props_file=prism_props_file,
         obs_data=data,
         particle_count=1000,
         perturbation_count=10,
-        check_threshold=0.99,
+        check_threshold=0.5,
     )
     smc_rf.run()
     res = smc_rf.get_result()
     theta = []
     llh = []
     for point in res:
-        print(point)
         theta.append(point[0])
         llh.append(point[1])
     x = [p[0] for p in theta]
