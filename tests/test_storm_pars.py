@@ -15,14 +15,17 @@ import stormpy._config as config
 class TestStormPars(unittest):
     def setUp(self):
         if not config.storm_with_pars:
-            raise AssertionError("Support parameters is missing. Try building storm-pars.")
+            raise AssertionError(
+                "Support parameters is missing. Try building storm-pars."
+            )
 
         path = stormpy.examples.files.prism_pdtmc_die
-        self.prism_program = stormpy.parse_prism_program(path)
+        prism_program = stormpy.parse_prism_program(path)
         formula_str = "P=? [F s=7 & d=2]"
-        properties = stormpy.parse_properties_for_prism_program(formula_str, prism_program)
+        properties = stormpy.parse_properties_for_prism_program(
+            formula_str, prism_program
+        )
         model = stormpy.build_parametric_model(prism_program, properties)
-
 
 
 def example_parametric_models_01():
@@ -31,9 +34,6 @@ def example_parametric_models_01():
         print("Support parameters is missing. Try building storm-pars.")
         return
 
-    
-
-    
     print("Model initial states: {}".format(model.initial_states))
     print("Model supports parameters: {}".format(model.supports_parameters))
     parameters = model.collect_probability_parameters()
