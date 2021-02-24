@@ -1,4 +1,5 @@
-from typing import List
+import abc
+from typing import List, Optional, Dict, Tuple, Any, Type
 import stormpy
 import stormpy.core
 import stormpy.pars
@@ -31,6 +32,110 @@ class MyPrismProgram(object):
         with open(self.prism_props_file, "r") as fptr:
             lines = fptr.readlines()
         return ";".join(lines)
+
+
+class McParticle(object):
+    def __init__(
+        self, particle_dim: int, particle: Optional[np.array], weight: Optional[float]
+    ) -> None:
+        self.particle_dim: int = particle_dim
+        self.particle: np.array = particle if particle else np.zeros(particle_dim)
+        self.weight: float = weight if weight else 0.0
+
+    def update_weight(self, new_weight: float):
+        self.weight = new_weight
+
+
+class AbstractObservableModel(abc.ABC):
+    @abc.abstractmethod
+    def estimate_llh(self, particle: McParticle) -> float:
+        pass
+
+
+class AbstractPrismModelProps(abc.ABC):
+    def __init__(self, prism_model_file: str, prism_props_file: str) -> None:
+        self.prism_model_file: str = prism_model_file
+        self.prism_props_file: str = prism_props_file
+
+    @abc.abstractmethod
+    def load_prism_model_props(self):
+        pass
+
+
+class MhUniformKernel(object):
+    def __init__(
+        self,
+        model: Type[AbstractObservableModel],
+        interval: Tuple[float],
+        particle_dim: int,
+        particle_trace_len: int,
+    ) -> None:
+        self.model = model
+        self.interval = interval
+        self.particle_dim = particle_dim
+        self.particle_trace_len = particle_trace_len
+        self.particle_trace: np.array = np.array(
+            particle_dim, particle_trace_len, dtype=float
+        )
+
+
+class SmcUniformKernel(object):
+    def __init__(
+        self,
+        model: Type[AbstractObservableModel],
+        interval: Tuple[float],
+        particle_dim: int,
+        particle_trace_len: int,
+        kernel_count: int,
+    ) -> None:
+        self.model = model
+        self.interval = interval
+        self.particle_dim = particle_dim
+        self.particle_trace_len = particle_trace_len
+        self.particle_trace: np.array = np.array(
+            particle_dim, particle_trace_len, dtype=float
+        )
+        self.particle_curr_idx: int = -1
+        self.particle_weights: np.array = np.zeros(particle_trace_len)
+        self.kernel_count: int = kernel_count
+        self.kernel_params: np.array = np.zeros(self.kernel_count)
+
+    def _draw_uniform(
+        self,
+        interval: Optional[Tuple[float]],
+        sigma: Optional[float] = 0,
+    ):
+        l, u = interval if interval else self.interval
+        new_l, new_u = (l - sigma, u + sigma)
+        new_l = self.interval[0] if new_l < self.interval[0] else new_l
+        new_u = self.interval[1] if new_u > self.interval[1] else new_u
+        return McParticle(
+            particle_dim=self.particle_dim,
+            particle=np.uniform(new_l, new_u, self.particle_dim),
+            weight=0.0,
+        )
+
+    def _update_sigma(self):
+        pass
+
+    def _add_particle(self):
+        pass
+
+    def sample(self):
+        for i in range(0, self.particle_trace_len):
+
+        pass
+
+    def _pertubate(self):
+        pass
+
+
+class SirModelRf(AbstractObservableModel, AbstractPrismModelProps):
+    def __init__(self) -> None:
+        super().__init__()
+
+    def load_prism_model_props(self):
+        pass
 
 
 class SmcRf(object):
@@ -157,7 +262,9 @@ class SmcRf(object):
 
 def simulate_data(param: List[float]):
     prism_model_file = "/mnt/storage0/huypn12/repos/bbeess-py/examples/data/sir_310.pm"
-    prism_props_file = "/mnt/storage0/huypn12/repos/bbeess-py/examples/data/sir_310.pctl"
+    prism_props_file = (
+        "/mnt/storage0/huypn12/repos/bbeess-py/examples/data/sir_310.pctl"
+    )
     smc_rf = SmcRf(
         prism_model_file=prism_model_file,
         prism_props_file=prism_props_file,
@@ -178,7 +285,9 @@ def simulate_data(param: List[float]):
 
 def main3(data: List[int]):
     prism_model_file = "/mnt/storage0/huypn12/repos/bbeess-py/examples/data/sir_310.pm"
-    prism_props_file = "/mnt/storage0/huypn12/repos/bbeess-py/examples/data/sir_310.pctl"
+    prism_props_file = (
+        "/mnt/storage0/huypn12/repos/bbeess-py/examples/data/sir_310.pctl"
+    )
     smc_rf = SmcRf(
         prism_model_file=prism_model_file,
         prism_props_file=prism_props_file,
