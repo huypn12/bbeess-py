@@ -8,7 +8,7 @@ import stormpy.pars
 import numpy as np
 import scipy as sp
 
-from scripts.monte_carlo.mc import AbstractObservableModel
+from scripts.mc.common import AbstractObservableModel
 
 
 class MhUniformKernel(object):
