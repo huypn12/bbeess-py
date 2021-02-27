@@ -86,7 +86,7 @@ class MhUniformKernel(object):
         for i in range(0, self.particle_trace_len):
             candidate_particle = self._next_particle()
             idx = self.particle_curr_idx
-            last_log_llh = self.particle_weights[self, idx]
+            last_log_llh = self.particle_weights[idx]
             log_llh = self._estimate_weight(candidate_particle)
             acceptance_rate = np.min(0, log_llh - last_log_llh)
             u = np.random.uniform(0, 1)
