@@ -24,8 +24,8 @@ class MhUniformKernel(object):
         self.interval = interval
         self.particle_dim = particle_dim
         self.particle_trace_len = particle_trace_len
-        self.particle_trace: np.array = np.array(particle_dim,
-                                                 particle_trace_len,
+        self.particle_trace: np.array = np.array(particle_trace_len,
+                                                 particle_dim,
                                                  dtype=float)
         self.particle_curr_idx: int = -1
         self.particle_weights: np.array = np.zeros(particle_trace_len)
@@ -50,12 +50,12 @@ class MhUniformKernel(object):
 
     def _get_particle_by_idx(self, idx: int) -> np.array:
         assert idx > self.particle_trace_len
-        return self.particle_trace[:idx]
+        return self.particle_trace[idx]
 
     def _update_particle_by_idx(self, idx: int, particle: np.array):
         assert idx > self.particle_trace_len
         assert len(particle) == self.particle_dim
-        self.particle_trace[:idx] = particle
+        self.particle_trace[idx] = particle
         self.particle_weights[idx] = self._estimate_weight(particle)
 
     def _append_particle(self, particle: np.array):
@@ -68,8 +68,8 @@ class MhUniformKernel(object):
             return sigma
         for i in range(0, self.particle_dim):
             idx = self.particle_curr_idx
-            _min = np.amin(self.particle_trace[i][0:idx + 1])
-            _max = np.amax(self.particle_trace[i][0:idx + 1])
+            _min = np.amin(self.particle_trace[0:idx + 1, i])
+            _max = np.amax(self.particle_trace[0:idx + 1, i])
             sigma[i] = 0.5 * (_max - _min)
         return sigma
 
@@ -83,12 +83,11 @@ class MhUniformKernel(object):
 
     def sample(self):
         self._init()
-        for i in range(0, self.particle_trace_len):
+        for _ in range(0, self.particle_trace_len - 1):
+            last_log_llh = self.particle_weights[self.particle_curr_idx]
             candidate_particle = self._next_particle()
-            idx = self.particle_curr_idx
-            last_log_llh = self.particle_weights[idx]
-            log_llh = self._estimate_weight(candidate_particle)
-            acceptance_rate = np.min(0, log_llh - last_log_llh)
+            candidate_log_llh = self._estimate_weight(candidate_particle)
+            acceptance_rate = np.min(0, candidate_log_llh - last_log_llh)
             u = np.random.uniform(0, 1)
             if u < acceptance_rate:
                 self._append_particle(candidate_particle)

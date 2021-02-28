@@ -12,10 +12,10 @@ from scripts.mc.common import AbstractObservableModel, AbstractRationalModel, Ab
 from scripts.mc.mh_uniform_kernel import MhUniformKernel
 
 
-class SmcUniformKernel(object):
+class AbcSmcUniformKernel(object):
     def __init__(
         self,
-        model: Type[AbstractObservableModel],
+        model: Type[AbstractSimulationModel],
         interval: Tuple[float],
         particle_dim: int,
         particle_count: int,
