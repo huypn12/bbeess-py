@@ -7,4 +7,5 @@ class SirGenerator(object):
         self.i0 = i0
         self.r0 = r0
 
-    def war
+    def _compose(self):
+        pass

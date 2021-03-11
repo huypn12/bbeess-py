@@ -8,13 +8,13 @@ import stormpy.pars
 import numpy as np
 import scipy as sp
 
-from scripts.mc.common import AbstractObservableModel
+from scripts.mc.common import AbstractRationalModel
 
 
 class MhUniformKernel(object):
     def __init__(
         self,
-        model: Type[AbstractObservableModel],
+        model: Type[AbstractRationalModel],
         interval: Tuple[float],
         particle_dim: int,
         particle_trace_len: int,
@@ -24,9 +24,9 @@ class MhUniformKernel(object):
         self.interval = interval
         self.particle_dim = particle_dim
         self.particle_trace_len = particle_trace_len
-        self.particle_trace: np.array = np.array(particle_trace_len,
-                                                 particle_dim,
-                                                 dtype=float)
+        self.particle_trace: np.array = np.array(
+            particle_trace_len, particle_dim, dtype=float
+        )
         self.particle_curr_idx: int = -1
         self.particle_weights: np.array = np.zeros(particle_trace_len)
         self.use_sigma = use_sigma
@@ -62,14 +62,16 @@ class MhUniformKernel(object):
         self.particle_curr_idx += 1
         self._update_particle_by_idx(self.particle_curr_idx, particle)
 
-    def _get_sigma(self, ) -> Optional[np.array]:
+    def _get_sigma(
+        self,
+    ) -> Optional[np.array]:
         sigma = np.zeros(self.particle_dim)
         if not self.use_sigma:
             return sigma
         for i in range(0, self.particle_dim):
             idx = self.particle_curr_idx
-            _min = np.amin(self.particle_trace[0:idx + 1, i])
-            _max = np.amax(self.particle_trace[0:idx + 1, i])
+            _min = np.amin(self.particle_trace[0 : idx + 1, i])
+            _max = np.amax(self.particle_trace[0 : idx + 1, i])
             sigma[i] = 0.5 * (_max - _min)
         return sigma
 
@@ -96,3 +98,7 @@ class MhUniformKernel(object):
                 acceptance_rate = np.random.uniform(0, 1)
                 if u < epsilon:
                     self._append_particle(candidate_particle)
+        return self._get_result()
+
+    def _get_result(self):
+        return (self.particle_trace, self.particle_weights)

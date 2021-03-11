@@ -8,7 +8,11 @@ import stormpy.pars
 import numpy as np
 import scipy as sp
 
-from scripts.mc.common import AbstractObservableModel, AbstractRationalModel, AbstractSimulationModel
+from scripts.mc.common import (
+    AbstractObservableModel,
+    AbstractRationalModel,
+    AbstractSimulationModel,
+)
 from scripts.mc.mh_uniform_kernel import MhUniformKernel
 
 
@@ -29,15 +33,12 @@ class SmcUniformKernel(object):
         self.particle_weights: np.array = np.zeros(particle_count)
         self.particle_mh_trace_len: int = 1000
         self.kernel_count: int = kernel_count
-        self.kernel_params: np.array = np.zeros(self.particle_dim,
-                                                self.kernel_count)
+        self.kernel_params: np.array = np.zeros(self.particle_dim, self.kernel_count)
 
     def _init(self):
         for i in range(0, self.particle_count):
             particle, weight = self._draw_particle_from_kernel_idx(0)
-            self._update_particle_by_idx(idx=i,
-                                         particle=particle,
-                                         weight=weight)
+            self._update_particle_by_idx(idx=i, particle=particle, weight=weight)
 
     def _estimate_weight(self, particle: np.array):
         return self.model.estimate_log_llh(particle)
@@ -69,8 +70,7 @@ class SmcUniformKernel(object):
         assert idx > self.particle_count
         return self.particle_trace[:idx], self.particle_weights[idx]
 
-    def _update_particle_by_idx(self, idx: int, particle: np.array,
-                                weight: float):
+    def _update_particle_by_idx(self, idx: int, particle: np.array, weight: float):
         assert idx > self.particle_count
         assert len(particle) == self.particle_dim
         self.particle_trace[:idx] = particle
@@ -80,7 +80,9 @@ class SmcUniformKernel(object):
         self.particle_curr_idx += 1
         self._update_particle_by_idx(self.particle_curr_idx, particle, weight)
 
-    def _get_smc_sigma(self, ) -> Optional[np.array]:
+    def _get_smc_sigma(
+        self,
+    ) -> Optional[np.array]:
         return self._get_sigma(self, self.particle_trace)
 
     def _next_particle(self) -> np.array:
@@ -96,8 +98,8 @@ class SmcUniformKernel(object):
         if not self.use_sigma:
             return sigma
         for i in range(0, self.particle_dim):
-            _min = np.amin(particle_trace[0:idx + 1, i])
-            _max = np.amax(particle_trace[0:idx + 1, i])
+            _min = np.amin(particle_trace[0 : idx + 1, i])
+            _max = np.amax(particle_trace[0 : idx + 1, i])
             sigma[i] = 0.5 * (_max - _min)
         return sigma
 
@@ -114,8 +116,9 @@ class SmcUniformKernel(object):
         particle: np.array,
         weight: int,
     ) -> Tuple[np.array, float]:
-        mh_particle_trace: np.array = np.zeros(self.particle_mh_trace_len,
-                                               self.particle_dim)
+        mh_particle_trace: np.array = np.zeros(
+            self.particle_mh_trace_len, self.particle_dim
+        )
         mh_particle_weights: np.array = np.zeros(self.particle_mh_trace_len)
         mh_particle_trace[0] = particle
         mh_particle_weights[0] = weight
@@ -136,38 +139,41 @@ class SmcUniformKernel(object):
                     mh_particle_weights[idx + 1] = weight
 
     def _correct(self, kernel_idx: int):
-        pass
+        sigma = self._get_sigma(kernel_idx, self.particle_trace)
+        last_sigma = self.kernel_params(kernel_idx - 1)
+        w = [last_sigma[i] / sigma[i] for i in range(0, len(sigma))]
+        return w
 
-    def _select(self, kernel_idx: int):
-        weights = np.copy(self.particle_weights)
-        weights = np.exp(weights)
-        weights = weights / sum(weights)
+    def _select(self, weights: np.array):
+        w = np.copy(weights)
+        w = w / sum(w)
+        new_particles_idx = np.random.choice(
+            self.particle_count, self.particle_dim, replace=True, p=w
+        )
+        return new_particles_idx
 
     def _pertubate(self, kernel_idx: int):
         for idx in range(0, self.particle_count):
             particle, weight = self._get_particle_by_idx(idx)
             new_particle, new_weight = self._mh_transition(particle, weight)
-            self._update_particle_by_idx(idx,
-                                         particle=new_particle,
-                                         weight=new_weight)
-
-    def _update_kernels(self):
-        pass
+            self._update_particle_by_idx(idx, particle=new_particle, weight=new_weight)
 
     def sample(self):
         self._init()
         for t in range(1, self.kernel_count):
-            if t == 0:
-                pass
-            else:
-                if self.llh_free:
-                    # estimate distance, abc method
-                    pass
-                else:
-                    # MH-step
-                    pass
-                pass
-            # estimate distacce
+            # Correct
+            weight = self._correct(t)
+            # Select
+            new_particles_idx = self._select(weight)
+            for idx in range(0, len(new_particles_idx)):
+                self._update_particle_by_idx(
+                    idx,
+                    particle=self.particle_trace[idx],
+                    weight=1,
+                )
+            # Selection
+            self._pertubate(t)
+        return self._get_result()
 
-    def _pertubate(self):
-        pass
+    def _get_result(self):
+        return (self.particle_trace, self.particle_weights)
