@@ -11,7 +11,7 @@ import scipy as sp
 from scripts.mc.common import AbstractRationalModel
 
 
-class MhUniformKernel(object):
+class MhRfUniformKernel(object):
     def __init__(
         self,
         model: Type[AbstractRationalModel],

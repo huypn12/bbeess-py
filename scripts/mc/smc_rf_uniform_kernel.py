@@ -13,7 +13,7 @@ from scripts.mc.common import (
     AbstractRationalModel,
     AbstractSimulationModel,
 )
-from scripts.mc.mh_uniform_kernel import MhUniformKernel
+from scripts.mc.mh_uniform_kernel import MhRfUniformKernel
 
 
 class SmcUniformKernel(object):
