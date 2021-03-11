@@ -14,20 +14,24 @@ class PrismSmcCmdResultEntry(Enum):
     result = "Result:"
 
 
+class PrismSmcCmdParams(Enum):
+    method = "method"
+
+
 class PrismSmcExecutor(object):
     def __init__(
         self,
-        model_file: str,
-        property_file: str,
+        prism_model_file: str,
+        prism_props_file: str,
     ) -> None:
         super().__init__()
         self.prism_exec = "prism"
-        self.model_file: str = model_file
-        self.property_file: str = property_file
+        self.prism_model_file: str = prism_model_file
+        self.prism_props_file: str = prism_props_file
+        self.prop_str: str = ""
         self.exec_output: str = ""
         self.result_str: str = ""
-        self.resutl_num: float = 0.0
-        self.resutl_bool: bool = False
+        self.result = None
 
     def _execute_prism(self, model_consts: Optional[str] = None):
         prism_args = self._get_prism_args(model_consts)
@@ -42,8 +46,8 @@ class PrismSmcExecutor(object):
 
     def _get_base_prism_args(self, model_consts: Optional[str] = None) -> List[str]:
         cmd_args = [
-            self.model_file,
-            self.property_file,
+            self.prism_model_file,
+            self.prism_props_file,
             "-prop",
             "1",
             "-sim",
@@ -56,69 +60,108 @@ class PrismSmcExecutor(object):
     def _get_prism_args(self, model_consts: Optional[str] = None) -> List[str]:
         pass
 
-    def exec(self, model_consts_str: Optional[str] = None):
-        self._execute_prism(model_consts_str)
-        self._process_output()
-        return self.result
-
     def _process_output(self):
         assert self.exec_output
         parsed_lines: List[str] = self.exec_output.splitlines(keepends=False)
         for line in parsed_lines:
             if line.startswith(PrismSmcCmdResultEntry.simulating.value):
                 self._process_simulating(line)
+            elif line.startswith(PrismSmcCmdResultEntry.result_details.value):
+                self._process_result_details(line)
             elif line.startswith(PrismSmcCmdResultEntry.result.value):
+                self.result_str = line
                 self._process_final_result(line)
             else:
                 continue
 
+    def _process_simulating(self, line: str):
+        prop_str: str = line.replace(
+            PrismSmcCmdResultEntry.simulating.value, ""
+        ).strip()
+        self.prop_str = prop_str
+
+    @abstractmethod
+    def _process_result_details(self, line: str):
+        pass
+
     def _process_final_result(self, line: str):
-        result_str: str = line.replace(PrismSmcCmdResultEntry.result.value, "")
-        self.result = float(result_str)
+        result_str: str = line.replace(PrismSmcCmdResultEntry.result.value, "").strip()
+        self._set_result(result_str)
+
+    @abstractmethod
+    def _set_result(self, result_str):
+        pass
+
+    def exec(self, model_consts_str: Optional[str] = None):
+        self._execute_prism(model_consts_str)
+        self._process_output()
+        return self.result
 
 
 class PrismSmcSprtExecutor(PrismSmcExecutor):
     def __init__(
         self,
-        model_file: str,
-        property_file: str,
-        simwidth: int = 1000,
-        simconf: float = 0.95,
-        simapprox: int = 1000,
+        prism_model_file: str,
+        prism_props_file: str,
+        simwidth: float = None,
+        simconf: float = None,
     ) -> None:
-        super().__init__(model_file, property_file)
-        self.simwidth: int = simwidth
-        self.simconf: float = simconf
-        self.simapprox: int = simapprox
+        super().__init__(prism_model_file, prism_props_file)
+        self.simwidth = simwidth
+        self.simconf = simconf
+        self.simsamples: int = -1
+        self.result: bool = False
+
+    def _set_result(self, result_str):
+        if "false" in result_str.lower():
+            self.result = False
+        elif "true" in result_str.lower():
+            self.result = True
+        else:
+            raise ValueError("Unsupported value {}".format(result_str.lower()))
+
+    def _process_result_details(self, line: str):
+        details_str: str = line.replace(
+            PrismSmcCmdResultEntry.result_details.value, ""
+        ).strip()
+        self.simsamples = int(details_str.split(" ")[0])
 
     def _get_prism_args(self, model_consts: Optional[str] = None) -> List[str]:
         base_args = self._get_base_prism_args(model_consts)
         sim_args = [
-            "-method",
+            "-simmethod",
             "sprt",
-            "-simwidth",
-            str(self.simwidth),
-            "-simconf",
-            str(self.simconf),
-            "-simapprox",
-            str(self.simapprox),
         ]
+        if self.simwidth:
+            sim_args.extend(["-simwidth", str(self.simwidth)])
+        if self.simconf:
+            sim_args.extend(["-simconf", str(self.simconf)])
         return base_args + sim_args
 
 
 class PrismSmcApmcExecutor(PrismSmcExecutor):
     def __init__(
         self,
-        model_file: str,
-        property_file: str,
-        simwidth: int = 1000,
+        prism_model_file: str,
+        prism_props_file: str,
+        simsamples: int = 1000,
         simconf: float = 0.95,
         simapprox: int = 1000,
     ) -> None:
-        super().__init__(model_file, property_file)
-        self.simwidth: int = simwidth
+        super().__init__(prism_model_file, prism_props_file)
+        self.simsamples: int = simsamples
         self.simconf: float = simconf
         self.simapprox: int = simapprox
+        self.result: int = -1
+
+    def _set_result(self, result_str):
+        self.result = int(result_str.strip())
+
+    def _process_result_details(self, line: str):
+        details_str: str = line.replace(
+            PrismSmcCmdResultEntry.result_details.value, ""
+        ).strip()
+        self.simsamples = int(details_str.split(" ")[0])
 
     def _get_prism_args(self, model_consts: Optional[str] = None) -> List[str]:
         base_args = self._get_base_prism_args(model_consts)
@@ -132,4 +175,10 @@ class PrismSmcApmcExecutor(PrismSmcExecutor):
             "-simapprox",
             str(self.simapprox),
         ]
+        if self.simsamples:
+            sim_args.extend(["-simsamples", str(self.simsamples)])
+        if self.simwidth:
+            sim_args.extend(["-simwidth", str(self.simwidth)])
+        if self.simconf:
+            sim_args.extend(["-simconf", str(self.simconf)])
         return base_args + sim_args
