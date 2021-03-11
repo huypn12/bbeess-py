@@ -31,11 +31,13 @@ class AbstractPrismModelProps(abc.ABC):
             lines = fptr.readlines()
         props_str = ";".join(lines)
         self.prism_props = stormpy.parse_properties_for_prism_program(
-            props_str, self.prism_program)
+            props_str, self.prism_program
+        )
 
 
 class AbstractModelRational(AbstractPrismModelProps):
-    pass
+    def __init__(self, prism_model_file: str, prism_props_file: str) -> None:
+        super().__init__(prism_model_file, prism_props_file)
 
 
 class AbstractModelSimulation(AbstractPrismModelProps):
