@@ -1,8 +1,23 @@
 import unittest
 
-from scripts.prism.prism_smc_executor import PrismSmcExecutor
+from scripts.prism.prism_smc_executor import PrismSmcSprtExecutor
 
 
 class PrismSmcExecutorTest(unittest.TestCase):
     def setUp(self) -> None:
-        self.executor = PrismSmcExecutor()
+        self.prism_model_file = (
+            "/home/huypn12/Works/mcss/bbeess-py/experiments/data/sir_310.pm"
+        )
+        self.prism_props_file = (
+            "/home/huypn12/Works/mcss/bbeess-py/experiments/data/sir_310.pctl"
+        )
+        self.prism_sprt_executor = PrismSmcSprtExecutor(
+            prism_model_file=self.prism_model_file,
+            prism_props_file=self.prism_props_file,
+            simwidth=0.00005,
+            simconf=None,
+        )
+
+    def test_sprt_sir310(self):
+        result = self.prism_sprt_executor.exec("pa=1,pr=2")
+        self.assertFalse(result)
