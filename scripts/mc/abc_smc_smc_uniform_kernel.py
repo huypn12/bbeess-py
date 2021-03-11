@@ -9,7 +9,7 @@ import numpy as np
 import scipy as sp
 
 from scripts.mc.common import AbstractSimulationModel
-from scripts.prism.prism_smc_executor import PrismSmcExecutor
+from scripts.prism.prism_smc_executor import PrismSmcSprtExecutor
 
 
 class AbcSmc2UniformKernel(object):
@@ -30,9 +30,9 @@ class AbcSmc2UniformKernel(object):
         self.particle_mh_trace_len: int = 1000
         self.kernel_count: int = kernel_count
         self.kernel_params: np.array = np.zeros(self.particle_dim, self.kernel_count)
-        self.prism_smc_executor: PrismSmcExecutor = PrismSmcExecutor(
+        self.prism_smc_executor: PrismSmcSprtExecutor = PrismSmcSprtExecutor(
             model_file=model.prism_model_file,
-            property_file=prism_props_file,
+            property_file=model.prism_props_file,
         )
 
     def _init(self):
