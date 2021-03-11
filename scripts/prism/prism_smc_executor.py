@@ -1,3 +1,4 @@
+from abc import abstractmethod
 import subprocess
 
 from typing import List, Optional
@@ -16,23 +17,17 @@ class PrismSmcCmdResultEntry(Enum):
 class PrismSmcExecutor(object):
     def __init__(
         self,
-        prism_exec: str,
         model_file: str,
         property_file: str,
-        sim_path_len: int = 1000,
-        sim_confidence: float = 0.95,
-        sim_samples: int = 1000,
     ) -> None:
         super().__init__()
-        self.prism_exec: str = prism_exec
+        self.prism_exec = "prism"
         self.model_file: str = model_file
         self.property_file: str = property_file
-        self.exec_output: str = None
-        self.is_numeric_result: bool = False
-        self.sim_path_len: int = sim_path_len
-        self.sim_confidence: float = sim_confidence
-        self.sim_samples: int = sim_samples
-        self.result: float = 0.0
+        self.exec_output: str = ""
+        self.result_str: str = ""
+        self.resutl_num: float = 0.0
+        self.resutl_bool: bool = False
 
     def _execute_prism(self, model_consts: Optional[str] = None):
         prism_args = self._get_prism_args(model_consts)
@@ -42,28 +37,26 @@ class PrismSmcExecutor(object):
             stderr=subprocess.PIPE,
             universal_newlines=True,
         )
-        stdout, stderr = process.communicate()
-        print(stdout)
-        assert not stderr
+        stdout, _ = process.communicate()
         self.exec_output = stdout
 
-    def _get_prism_args(self, model_consts: Optional[str] = None) -> List[str]:
+    def _get_base_prism_args(self, model_consts: Optional[str] = None) -> List[str]:
         cmd_args = [
             self.model_file,
             self.property_file,
             "-prop",
             "1",
             "-sim",
-            "-simsamples",
-            str(self.sim_samples),
-            "-simconf",
-            str(self.sim_confidence),
         ]
         if model_consts:
             cmd_args.extend(["-const", model_consts])
         return cmd_args
 
-    def run(self, model_consts_str: Optional[str] = None):
+    @abstractmethod
+    def _get_prism_args(self, model_consts: Optional[str] = None) -> List[str]:
+        pass
+
+    def exec(self, model_consts_str: Optional[str] = None):
         self._execute_prism(model_consts_str)
         self._process_output()
         return self.result
@@ -79,11 +72,64 @@ class PrismSmcExecutor(object):
             else:
                 continue
 
-    def _process_simulating(self, line: str):
-        self.is_numeric_result = False
-        if "P=?" in line or "R=?" in line:
-            self.is_numeric_result = True
-
     def _process_final_result(self, line: str):
         result_str: str = line.replace(PrismSmcCmdResultEntry.result.value, "")
         self.result = float(result_str)
+
+
+class PrismSmcSprtExecutor(PrismSmcExecutor):
+    def __init__(
+        self,
+        model_file: str,
+        property_file: str,
+        simwidth: int = 1000,
+        simconf: float = 0.95,
+        simapprox: int = 1000,
+    ) -> None:
+        super().__init__(model_file, property_file)
+        self.simwidth: int = simwidth
+        self.simconf: float = simconf
+        self.simapprox: int = simapprox
+
+    def _get_prism_args(self, model_consts: Optional[str] = None) -> List[str]:
+        base_args = self._get_base_prism_args(model_consts)
+        sim_args = [
+            "-method",
+            "sprt",
+            "-simwidth",
+            str(self.simwidth),
+            "-simconf",
+            str(self.simconf),
+            "-simapprox",
+            str(self.simapprox),
+        ]
+        return base_args + sim_args
+
+
+class PrismSmcApmcExecutor(PrismSmcExecutor):
+    def __init__(
+        self,
+        model_file: str,
+        property_file: str,
+        simwidth: int = 1000,
+        simconf: float = 0.95,
+        simapprox: int = 1000,
+    ) -> None:
+        super().__init__(model_file, property_file)
+        self.simwidth: int = simwidth
+        self.simconf: float = simconf
+        self.simapprox: int = simapprox
+
+    def _get_prism_args(self, model_consts: Optional[str] = None) -> List[str]:
+        base_args = self._get_base_prism_args(model_consts)
+        sim_args = [
+            "-method",
+            "apmc",
+            "-simwidth",
+            str(self.simwidth),
+            "-simconf",
+            str(self.simconf),
+            "-simapprox",
+            str(self.simapprox),
+        ]
+        return base_args + sim_args
