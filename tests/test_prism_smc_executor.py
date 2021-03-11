@@ -3,7 +3,7 @@ import unittest
 from scripts.prism.prism_smc_executor import PrismSmcSprtExecutor
 
 
-class PrismSmcExecutorTest(unittest.TestCase):
+class TestPrismSmcSprtExecutor(unittest.TestCase):
     def setUp(self) -> None:
         self.prism_model_file = (
             "/home/huypn12/Works/mcss/bbeess-py/experiments/data/sir_310.pm"
