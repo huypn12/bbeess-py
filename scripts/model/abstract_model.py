@@ -1,7 +1,7 @@
 import abc
-from typing import List, Optional, Dict, Tuple, Any, Type
 
 import numpy as np
+from typing import List, Dict
 
 
 class AbstractObservableModel(abc.ABC):
@@ -22,7 +22,7 @@ class AbstractRationalModel(abc.ABC):
 
 class AbstractSimulationModel(abc.ABC):
     @abc.abstractmethod
-    def estimate_log_llh(self, theta: np.array) -> float:
+    def estimate_log_llh(self, particle: np.array) -> float:
         pass
 
     @abc.abstractmethod

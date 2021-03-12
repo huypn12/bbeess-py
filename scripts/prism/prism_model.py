@@ -35,12 +35,12 @@ class AbstractPrismModelProps(abc.ABC):
         )
 
 
-class AbstractModelRational(AbstractPrismModelProps):
+class AbstractPrismModelRational(AbstractPrismModelProps):
     def __init__(self, prism_model_file: str, prism_props_file: str) -> None:
         super().__init__(prism_model_file, prism_props_file)
 
 
-class AbstractModelSimulation(AbstractPrismModelProps):
+class AbstractPrismModelSimulation(AbstractPrismModelProps):
     def __init__(self, prism_model_file: str, prism_props_file: str) -> None:
         super().__init__(prism_model_file, prism_props_file)
         self.prism_smc_executor = PrismSmcExecutor(
@@ -48,5 +48,3 @@ class AbstractModelSimulation(AbstractPrismModelProps):
             prism_model_file=prism_model_file,
             prism_props_file=prism_props_file,
         )
-
-    pass
