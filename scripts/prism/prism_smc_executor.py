@@ -182,7 +182,7 @@ class PrismSmcApmcExecutor(PrismSmcExecutor):
         base_args = self._get_base_prism_args(model_consts)
         sim_args = [
             "-simmethod",
-            "sprt",
+            "apmc",
         ]
         if self.simsamples:
             sim_args.extend(["-simsamples", str(self.simsamples)])
