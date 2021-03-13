@@ -6,6 +6,7 @@ from typing import List, Optional, Dict, Tuple, Any, Type
 import stormpy
 import stormpy.core
 import stormpy.pars
+import stormpy.simulator
 
 import numpy as np
 
@@ -15,6 +16,7 @@ class SimpleSimModel(AbstractSimulationModel):
         self,
         prism_model_file: str,
         prism_props_file: str,
+        obs_labels: List[str],
     ) -> None:
         self.prism_model_file: str = prism_model_file
         self.prism_props_file: str = prism_props_file
@@ -29,6 +31,7 @@ class SimpleSimModel(AbstractSimulationModel):
         self.model = None
         self.check_prop = None
         self.obs_props = []
+        self.obs_labels = obs_labels
         self._load()
 
     def _load_model_file(self):
@@ -55,6 +58,10 @@ class SimpleSimModel(AbstractSimulationModel):
         self.check_prop_unbounded = self.prism_props[1]
         # Properties for observing
         self.obs_props = self.prism_props[2:]
+        # State label mapping
+        self.state_mapping: Dict[int, List[str]] = {}
+        for state in self.model.states:
+            self.state_mapping[state.id] = [label for label in state.labels]
 
     def _load(self):
         self._load_model_file()
@@ -70,7 +77,14 @@ class SimpleSimModel(AbstractSimulationModel):
         instantiated_model = instantiator.instantiate(point)
         return instantiated_model
 
-    def model_params_to_prism_cmd_args(self, particle: np.array):
+    def _is_obs_state(self, state_idx: int) -> Tuple[bool, Optional[str]]:
+        state_labels = self.state_mapping[state_idx]
+        for label in state_labels:
+            if label in self.obs_labels:
+                return (True, label)
+        return (False, None)
+
+    def _model_params_to_prism_cmd_args(self, particle: np.array):
         params = []
         model_parameters = self.model.collect_probability_parameters()
         for i, p in enumerate(model_parameters):
@@ -84,7 +98,7 @@ class SimpleSimModel(AbstractSimulationModel):
             simconf=0.025,
         )
         result = self.prism_sprt_executor.exec(
-            self.model_params_to_prism_cmd_args(particle)
+            self._model_params_to_prism_cmd_args(particle)
         )
         return result
 
@@ -103,10 +117,12 @@ class SimpleSimModel(AbstractSimulationModel):
         for i, p in enumerate(model_params):
             point[p] = stormpy.RationalRF(particle[i])
         instantiated_model = self._instantiate(particle)
-        simulator = stormpy.simulator.create_simulator(instantiated_model, seed=42)
+        simulator = stormpy.simulator.create_simulator(
+            instantiated_model, seed=np.random.randint(1000)
+        )
 
         final_outcomes = dict()
-        for _ in range(1000):
+        for _ in range(sample_count):
             observation = None
             while not simulator.is_done():
                 observation, _ = simulator.step()  # reward in place hodler
@@ -116,16 +132,13 @@ class SimpleSimModel(AbstractSimulationModel):
                 final_outcomes[observation] += 1
             simulator.restart()
 
-        summary_stats = np.zeros(len(self.obs_data))
+        summary = np.zeros(len(self.obs_props))
         for k, v in final_outcomes.items():
             is_obs_state, label = self._is_obs_state(k)
             if is_obs_state:
-                summary_stats[self.obs_labels.index(label)] = v
+                summary[self.obs_labels.index(label)] = v
+        return summary
 
-        summary_stats = summary_stats * 1.0 / np.sum(summary_stats)
-
-    def estimate_distance(self, y_sim: np.array, y_obs: np.array) -> float:
-        s_sim = y_sim * 1.0 / np.sum(y_sim)
-        s_obs = y_obs * 1.0 / np.sum(y_obs)
+    def estimate_distance(self, s_sim: np.array, s_obs: np.array) -> float:
         distance = np.linalg.norm(s_sim - s_obs)
         return distance

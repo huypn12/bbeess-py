@@ -36,7 +36,7 @@ class AbstractSimulationModel(abc.ABC):
     @abc.abstractmethod
     def estimate_distance(
         self,
-        theta: np.array,
         s_sim: np.array,
+        s_obs: np.array,
     ) -> float:
         pass

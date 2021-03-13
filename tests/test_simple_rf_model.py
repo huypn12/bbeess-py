@@ -31,7 +31,7 @@ class TestSimpleRfModel(unittest.TestCase):
     def test_estimate_log_llh(self):
         true_params = np.array([0.005, 0.007])
         result = self.model.estimate_log_llh(true_params, [20, 20, 20, 20])
-        self.assertEqual(result, -90.64469718700241)
+        self.assertEqual(result, -66.05461893121827)
 
     def test_simulate(self):
         true_params = np.array([0.005, 0.007])
