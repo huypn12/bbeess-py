@@ -12,22 +12,26 @@ class AbstractObservableModel(abc.ABC):
 
 class AbstractRationalModel(abc.ABC):
     @abc.abstractmethod
-    def check_prop(self, particle: np.array) -> float:
-        pass
+    def check_bounded(self, particle: np.array) -> float:
+        return 0.0
 
     @abc.abstractmethod
-    def estimate_log_llh(self, particle: np.array) -> float:
+    def check_unbounded(self, particle: np.array) -> float:
+        return 0.0
+
+    @abc.abstractmethod
+    def estimate_log_llh(self, particle: np.array, y_obs: np.array) -> float:
         pass
 
 
 class AbstractSimulationModel(abc.ABC):
     @abc.abstractmethod
-    def estimate_log_llh(self, particle: np.array) -> float:
-        pass
+    def check_bounded(self, particle: np.array) -> float:
+        return 0.0
 
     @abc.abstractmethod
-    def check_prop(self, particle: np.array) -> float:
-        pass
+    def check_unbounded(self, particle: np.array) -> float:
+        return 0.0
 
     @abc.abstractmethod
     def estimate_distance(

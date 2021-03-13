@@ -13,18 +13,20 @@ class SimpleRfModel(AbstractRationalModel):
         self,
         prism_model_file: str,
         prism_props_file: str,
-        s_obs: List[float],
     ) -> None:
         self.prism_model_file: str = prism_model_file
         self.prism_props_file: str = prism_props_file
-        self.model = None
         self.prism_program = None
         self.prism_props = None
-        self.s_obs = None
-
-    def _load_prism_model_props(self):
-        self._load_model_file()
-        self._load_props_file()
+        self.model = None
+        # Property for
+        self.check_prop = None
+        self.check_rf = None
+        # Properties fo
+        self.obs_props = []
+        self.obs_rf = []
+        # initiate
+        self._load()
 
     def _load_model_file(self):
         self.prism_program = stormpy.parse_prism_program(self.prism_model_file)
@@ -42,21 +44,72 @@ class SimpleRfModel(AbstractRationalModel):
 
     def _load_rf(self):
         self.model = stormpy.build_parametric_model(
-            self.my_prism_program.prism_program,
-            self.my_prism_program.prism_props,
+            self.prism_program,
+            self.prism_props,
         )
-        self.model_parameters = self.model.collect_probability_parameters()
         # Property for checking
-        self.check_prop = self.my_prism_program.prism_props[0]
-        self.check_rf = stormpy.model_checking(self.model, self.check_prop).at(
-            self.model.initial_states[0]
-        )
+        self.check_prop_bounded = self.prism_props[0]
+        self.check_prop_unbounded = self.prism_props[1]
+        self.check_rf_unbounded = stormpy.model_checking(
+            self.model, self.check_prop_unbounded
+        ).at(self.model.initial_states[0])
         # Properties for observing
-        self.obs_props = self.my_prism_program.prism_props[1:]
-        assert len(self.s_obs) == len(self.obs_props)
+        self.obs_props = self.prism_props[2:]
         self.obs_rf = [
             stormpy.model_checking(self.model, obs_prop).at(
                 self.model.initial_states[0]
             )
             for obs_prop in self.obs_props
         ]
+
+    def _load(self):
+        self._load_model_file()
+        self._load_props_file()
+        self._load_rf()
+
+    def _instantiate(self, particle: np.array):
+        instantiator = stormpy.pars.PDtmcInstantiator(self.model)
+        model_parameters = self.model.collect_probability_parameters()
+        point = dict()
+        for i, p in enumerate(model_parameters):
+            point[p] = stormpy.RationalRF(particle[i])
+        instantiated_model = instantiator.instantiate(point)
+        return instantiated_model
+
+    def check_bounded(self, particle: np.array):
+        instantiated_model = self._instantiate(particle)
+        initial_state = self.model.initial_states[0]
+        result = stormpy.model_checking(instantiated_model, self.check_prop_bounded).at(
+            initial_state
+        )
+        return result
+
+    def check_unbounded(self, particle: np.array):
+        instantiated_model = self._instantiate(particle)
+        initial_state = self.model.initial_states[0]
+        result = stormpy.model_checking(
+            instantiated_model, self.check_prop_unbounded
+        ).at(initial_state)
+        return result
+
+    def simulate(self, particle: np.array, sample_count: int):
+        model_params = self.model.collect_probability_parameters()
+        assert len(particle) == len(model_params)
+        point = dict()
+        for i, p in enumerate(model_params):
+            point[p] = stormpy.RationalRF(particle[i])
+        P = [float(rf.evaluate(point)) for rf in self.obs_rf]
+        sample = np.random.multinomial(sample_count, P)
+        return sample
+
+    def estimate_log_llh(self, particle: np.array, y_obs: np.array) -> float:
+        model_params = self.model.collect_probability_parameters()
+        assert len(particle) == len(model_params)
+        point = dict()
+        for i, p in enumerate(model_params):
+            point[p] = stormpy.RationalRF(particle[i])
+        P = [float(rf.evaluate(point)) for rf in self.obs_rf]
+        log_llh = 0
+        for i in range(0, len(particle)):
+            log_llh += y_obs[i] * np.log(P[i])
+        return log_llh
