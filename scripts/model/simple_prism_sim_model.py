@@ -92,6 +92,26 @@ class SimpleSimModel(AbstractSimulationModel):
             params.append(param_str)
         return ",".join(params)
 
+    def _set_prism_args(
+        self,
+        simwidth: Optional[float] = None,
+        simsamples: Optional[float] = None,
+        simconf: Optional[float] = None,
+        simapprox: Optional[float] = None,
+    ):
+        self.prism_sprt_executor.set_prism_args(
+            simwidth=simwidth,
+            simsamples=simsamples,
+            simconf=simconf,
+            simapprox=simapprox,
+        )
+        self.prism_apmc_executor.set_prism_args(
+            simwidth=simwidth,
+            simsamples=simsamples,
+            simconf=simconf,
+            simapprox=simapprox,
+        )
+
     def check_bounded(self, particle: np.array):
         self.prism_sprt_executor.set_prism_args(
             simwidth=0.0005,
