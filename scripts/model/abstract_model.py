@@ -23,6 +23,10 @@ class AbstractRationalModel(abc.ABC):
     def estimate_log_llh(self, particle: np.array, y_obs: np.array) -> float:
         pass
 
+    @abc.abstractmethod
+    def simulate(self, particle: np.array, sample_count: int) -> np.array:
+        pass
+
 
 class AbstractSimulationModel(abc.ABC):
     @abc.abstractmethod
@@ -39,4 +43,8 @@ class AbstractSimulationModel(abc.ABC):
         s_sim: np.array,
         s_obs: np.array,
     ) -> float:
+        pass
+
+    @abc.abstractmethod
+    def simulate(self, particle: np.array, sample_count: int) -> np.array:
         pass

@@ -10,23 +10,26 @@ import scipy as sp
 from scripts.model.abstract_model import AbstractSimulationModel
 
 
-class McRfUniformKernel(object):
+class AbcMcSmcUniformKernel(object):
     def __init__(
         self,
         model: Type[AbstractSimulationModel],
         interval: Tuple[float],
         particle_dim: int,
         particle_trace_len: int,
+        observed_data: List[int],
     ) -> None:
         self.model = model
         self.interval = interval
         self.particle_dim = particle_dim
         self.particle_trace_len = particle_trace_len
-        self.particle_trace: np.array = np.array(
-            particle_trace_len, particle_dim, dtype=float
+        self.particle_trace: np.array = np.zeros(
+            (particle_trace_len, particle_dim), dtype=float
         )
         self.particle_curr_idx: int = -1
         self.particle_weights: np.array = np.zeros(particle_trace_len)
+        self.particle_mean: np.array = np.zeros(particle_dim)
+        self.observed_data = observed_data
 
     def _init(self):
         self.particle_curr_idx = 0
@@ -36,9 +39,16 @@ class McRfUniformKernel(object):
     def _get_particle_by_idx(self, idx: int) -> np.array:
         return self.particle_trace[idx]
 
+    def _to_stats_summary(self, cat: np.array) -> np.array:
+        return cat / np.sum(cat)
+
     def _update_particle_by_idx(self, idx: int, particle: np.array):
         self.particle_trace[idx] = particle
-        self.particle_weights[idx] = self.model.estimate_log_llh(particle)
+        y_sim = self.model.simulate(particle, 100 * len(self.observed_data))
+        self.particle_weights[idx] = self.model.estimate_distance(
+            self._to_stats_summary(y_sim),
+            self._to_stats_summary(self.observed_data),
+        )
 
     def _append_particle(self, particle: np.array):
         self.particle_curr_idx += 1
@@ -56,8 +66,19 @@ class McRfUniformKernel(object):
             candidate_sat = False
             while not candidate_sat:
                 candidate_particle = self._next_particle()
-                candidate_sat = self.model.check_prop(candidate_particle)
+                candidate_sat = self.model.check_bounded(candidate_particle)
             self._append_particle(candidate_particle)
+        self._estimate_point()
 
     def get_result(self):
-        return (self.particle_trace, self.particle_weights)
+        return (self.particle_mean, self.particle_trace, self.particle_weights)
+
+    def _normalize_weight(self) -> np.array:
+        return self.particle_weights / np.sum(self.particle_weights)
+
+    def _estimate_point(self) -> np.array:
+        particle = np.zeros(self.particle_dim)
+        normalized_weight = self._normalize_weight()
+        for i in range(0, self.particle_trace_len):
+            particle += self.particle_trace[i] * normalized_weight[i]
+        self.particle_mean = particle

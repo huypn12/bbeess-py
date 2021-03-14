@@ -29,6 +29,7 @@ class McRfUniformKernel(object):
         )
         self.particle_curr_idx: int = -1
         self.particle_weights: np.array = np.zeros(particle_trace_len)
+        self.particle_mean: np.array = np.zeros(particle_dim)
         self.observed_data = observed_data
 
     def _init(self):
@@ -63,6 +64,17 @@ class McRfUniformKernel(object):
                 candidate_particle = self._next_particle()
                 candidate_sat = self.model.check_bounded(candidate_particle)
             self._append_particle(candidate_particle)
+        self._estimate_point()
 
     def get_result(self):
-        return (self.particle_trace, self.particle_weights)
+        return (self.particle_mean, self.particle_trace, self.particle_weights)
+
+    def _normalize_weight(self) -> np.array:
+        return self.particle_weights / np.sum(self.particle_weights)
+
+    def _estimate_point(self) -> np.array:
+        particle = np.zeros(self.particle_dim)
+        normalized_weight = self._normalize_weight()
+        for i in range(0, self.particle_trace_len):
+            particle += self.particle_trace[i] * normalized_weight[i]
+        self.particle_mean = particle

@@ -99,7 +99,6 @@ class PrismSmcExecutor(object):
     def _set_result(self, result_str: str):
         pass
 
-    @abstractmethod
     def set_prism_args(
         self,
         simwidth: Optional[float] = None,
