@@ -1,3 +1,4 @@
+import abc
 import unittest
 
 import numpy as np
@@ -25,10 +26,10 @@ class TestAbcMcSimUniformKernel(unittest.TestCase):
             particle_dim=2,
             particle_trace_len=100,
             observed_data=[28, 12, 17, 43],
+            abc_threshold=0.4,
         )
 
     def test_exec(self):
         self.mc.run()
-        particle, trace, weights = self.mc.get_result()
-        print(particle)
-        pass
+        particle_mean, trace, weights = self.mc.get_result()
+        print("Inference result: {}".format(particle_mean))

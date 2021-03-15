@@ -3,10 +3,10 @@ import unittest
 import numpy as np
 
 from scripts.model.simple_prism_rf_model import SimpleRfModel
-from scripts.mc.mc_rf_uniform_kernel import McRfUniformKernel
+from scripts.mc.smc_rf_uniform_kernel import SmcRfUniformKernel
 
 
-class TestMcRfUniformKernel(unittest.TestCase):
+class TestMhRfUniformKernel(unittest.TestCase):
     def setUp(self):
         self.prism_model_file = (
             "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_310.pm"
@@ -18,11 +18,12 @@ class TestMcRfUniformKernel(unittest.TestCase):
             self.prism_model_file,
             self.prism_props_file,
         )
-        self.mc = McRfUniformKernel(
+        self.mc = SmcRfUniformKernel(
             model=self.model,
             interval=[0, 0.01],
             particle_dim=2,
             particle_trace_len=1000,
+            kernel_count=100,
             observed_data=[28, 12, 17, 43],
         )
 
