@@ -8,8 +8,9 @@ import stormpy.pars
 import numpy as np
 import scipy as sp
 
-from scripts.mc.common import AbstractSimulationModel
+from scripts.model.abstract_model import AbstractSimulationModel
 from scripts.prism.prism_smc_executor import PrismSmcSprtExecutor
+from scripts.prism.prism_smc_executor import PrismSmcApmcExecutor
 
 
 class AbcSmc2UniformKernel(object):

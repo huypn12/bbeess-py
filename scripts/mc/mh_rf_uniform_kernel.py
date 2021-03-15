@@ -18,26 +18,29 @@ class MhRfUniformKernel(object):
         interval: Tuple[float],
         particle_dim: int,
         particle_trace_len: int,
+        observed_data: List[int],
         use_sigma: bool = False,
     ) -> None:
         self.model = model
         self.interval = interval
         self.particle_dim = particle_dim
         self.particle_trace_len = particle_trace_len
-        self.particle_trace: np.array = np.array(
-            particle_trace_len, particle_dim, dtype=float
+        self.particle_trace: np.array = np.zeros(
+            (particle_trace_len, particle_dim), dtype=float
         )
         self.particle_curr_idx: int = -1
         self.particle_weights: np.array = np.zeros(particle_trace_len)
+        self.particle_mean: np.array = np.zeros(particle_dim)
+        self.observed_data = observed_data
         self.use_sigma = use_sigma
 
     def _init(self):
         self.particle_curr_idx = 0
-        first_particle = self._sample()
+        first_particle = np.zeros(self.particle_dim)
+        for i in range(0, self.particle_dim):
+            first_particle[i] = np.random.uniform(*self.interval)
         self._update_particle_by_idx(0, first_particle)
-
-    def _estimate_weight(self, particle: np.array):
-        return self.model.estimate_log_llh(particle)
+        self.particle_curr_idx = 1
 
     def _get_interval(self, sigma: Optional[float]) -> Tuple[float]:
         l, u = self.interval
@@ -53,10 +56,12 @@ class MhRfUniformKernel(object):
         return self.particle_trace[idx]
 
     def _update_particle_by_idx(self, idx: int, particle: np.array):
-        assert idx > self.particle_trace_len
+        assert idx < self.particle_trace_len
         assert len(particle) == self.particle_dim
         self.particle_trace[idx] = particle
-        self.particle_weights[idx] = self._estimate_weight(particle)
+        self.particle_weights[idx] = self.model.estimate_log_llh(
+            particle, self.observed_data
+        )
 
     def _append_particle(self, particle: np.array):
         self.particle_curr_idx += 1
@@ -83,22 +88,35 @@ class MhRfUniformKernel(object):
             particle[i] = np.random.uniform(*interval)
         return particle
 
-    def sample(self):
+    def run(self):
         self._init()
-        for _ in range(0, self.particle_trace_len - 1):
+        while self.particle_curr_idx < self.particle_trace_len - 1:
             last_log_llh = self.particle_weights[self.particle_curr_idx]
             candidate_particle = self._next_particle()
-            candidate_log_llh = self._estimate_weight(candidate_particle)
-            acceptance_rate = np.min(0, candidate_log_llh - last_log_llh)
+            candidate_log_llh = self.model.estimate_log_llh(
+                candidate_particle, self.observed_data
+            )
+            acceptance_rate = np.min(np.array([0, candidate_log_llh - last_log_llh]))
+            acceptance_rate = np.exp(acceptance_rate)
             u = np.random.uniform(0, 1)
             if u < acceptance_rate:
                 self._append_particle(candidate_particle)
             else:
-                epsilon = 1e-4
-                acceptance_rate = np.random.uniform(0, 1)
-                if u < epsilon:
+                acceptance_rate = 1e-4
+                u = np.random.uniform(0, 1)
+                if u < acceptance_rate:
                     self._append_particle(candidate_particle)
-        return self._get_result()
+        self._estimate_point()
 
-    def _get_result(self):
-        return (self.particle_trace, self.particle_weights)
+    def get_result(self):
+        return (self.particle_mean, self.particle_trace, self.particle_weights)
+
+    def _normalize_weight(self) -> np.array:
+        return self.particle_weights / np.sum(self.particle_weights)
+
+    def _estimate_point(self) -> np.array:
+        particle = np.zeros(self.particle_dim)
+        normalized_weight = self._normalize_weight()
+        for i in range(0, self.particle_trace_len):
+            particle += self.particle_trace[i] * normalized_weight[i]
+        self.particle_mean = particle
