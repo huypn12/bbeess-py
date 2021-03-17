@@ -22,7 +22,7 @@ class TestMhRfUniformKernel(unittest.TestCase):
             model=self.model,
             interval=[0, 0.01],
             particle_dim=2,
-            particle_trace_len=1000,
+            particle_trace_len=10,
             kernel_count=100,
             observed_data=[28, 12, 17, 43],
         )
