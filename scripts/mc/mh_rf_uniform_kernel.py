@@ -93,6 +93,9 @@ class MhRfUniformKernel(object):
         while self.particle_curr_idx < self.particle_trace_len - 1:
             last_log_llh = self.particle_weights[self.particle_curr_idx]
             candidate_particle = self._next_particle()
+            candidate_sat = self.model.check_bounded(candidate_particle)
+            if not candidate_sat:
+                continue
             candidate_log_llh = self.model.estimate_log_llh(
                 candidate_particle, self.observed_data
             )
