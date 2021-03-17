@@ -26,13 +26,14 @@ class SmcRfUniformKernel(object):
         self.particle_dim = particle_dim
         self.particle_trace_len = particle_trace_len
         self.particle_trace: np.array = np.zeros(
-            (particle_dim, particle_trace_len), dtype=float
+            (particle_trace_len, particle_dim), dtype=float
         )
         self.particle_weights: np.array = np.zeros(particle_trace_len, dtype=float)
-        self.particle_mh_trace_len: int = 1000
+        self.particle_mh_trace_len: int = particle_trace_len
+        self.particle_mean: np.array = np.zeros(particle_dim, dtype=float)
         self.kernel_count: int = kernel_count
         self.kernel_params: np.array = np.zeros(
-            (self.particle_dim, self.kernel_count), dtype=float
+            (kernel_count, particle_dim), dtype=float
         )
         self.observed_data = observed_data
 
@@ -40,9 +41,8 @@ class SmcRfUniformKernel(object):
         for i in range(0, self.particle_trace_len):
             particle, weight = self._draw_particle_from_kernel_idx(0)
             self._update_particle_by_idx(idx=i, particle=particle, weight=weight)
-
-    def _estimate_weight(self, particle: np.array):
-        return self.model.estimate_log_llh(particle)
+        for i in range(0, self.kernel_count):
+            self.kernel_params[i]
 
     def _get_interval(self, sigma: Optional[float]) -> Tuple[float]:
         l, u = self.interval
@@ -57,22 +57,19 @@ class SmcRfUniformKernel(object):
         self,
         idx: int,
     ) -> Tuple[np.array, float]:
-        sigma = self.kernel_params[:, idx]
         particle = np.zeros(self.particle_dim)
         weight = 0
         for i in range(0, self.particle_dim):
-            interval = self._get_interval(sigma[i])
-            particle[i] = np.random.uniform(*interval)
-            weight = 1.0 / (2 * sigma[i])
+            particle[i] = np.random.uniform(*self.interval)
+            weight = 1.0
         return (particle, weight)
 
     def _get_particle_by_idx(self, idx: int) -> Tuple[np.array, float]:
-        assert idx > self.particle_trace_len
-        return self.particle_trace[:idx], self.particle_weights[idx]
+        return self.particle_trace[idx], self.particle_weights[idx]
 
     def _update_particle_by_idx(self, idx: int, particle: np.array, weight: float):
         assert len(particle) == self.particle_dim
-        self.particle_trace[:idx] = particle
+        self.particle_trace[idx] = particle
         self.particle_weights[idx] = weight
 
     def _append_particle(self, particle: np.array, weight: float):
@@ -81,16 +78,12 @@ class SmcRfUniformKernel(object):
 
     def _next_particle(self) -> np.array:
         particle = np.zeros(self.particle_dim)
-        sigma = self._get_sigma(self, self.particle_trace)
         for i in range(0, self.particle_dim):
-            interval = self._get_interval(sigma[i])
-            particle[i] = np.random.uniform(*interval)
+            particle[i] = np.random.uniform(*self.interval)
         return particle
 
     def _get_sigma(self, particle_idx: int, particle_trace: np.array):
         sigma = np.zeros(self.particle_dim)
-        if not self.use_sigma:
-            return sigma
         for i in range(0, self.particle_dim):
             _min = np.amin(particle_trace[0 : particle_idx + 1, i])
             _max = np.amax(particle_trace[0 : particle_idx + 1, i])
@@ -107,50 +100,42 @@ class SmcRfUniformKernel(object):
         mh_particle_trace[0] = particle
         mh_particle_weights[0] = weight
 
-    def _mh_next_particle(self, particle_idx: int, particle_trace: np.array):
-        particle = np.zeros(self.particle_dim)
-        sigma = self._get_sigma(particle_idx, particle_trace)
-        for i in range(0, self.particle_dim):
-            interval = self._get_interval(sigma[i])
-            particle[i] = np.random.uniform(*interval)
-        return particle
-
     def _mh_transition(
         self,
         particle: np.array,
         weight: int,
     ) -> Tuple[np.array, float]:
         mh_particle_trace: np.array = np.zeros(
-            self.particle_mh_trace_len, self.particle_dim
+            (self.particle_mh_trace_len, self.particle_dim), dtype=float
         )
         mh_particle_weights: np.array = np.zeros(self.particle_mh_trace_len)
         self._mh_init(particle, weight, mh_particle_trace, mh_particle_weights)
         mh_particle_idx = 1
         while mh_particle_idx < self.particle_mh_trace_len - 1:
             last_log_llh = mh_particle_weights[mh_particle_idx]
-            candidate_particle = self._mh_next_particle(
-                mh_particle_idx, mh_particle_trace
+            candidate_particle = self._next_particle()
+            candidate_log_llh = self.model.estimate_log_llh(
+                candidate_particle, self.observed_data
             )
-            candidate_log_llh = self._estimate_weight(candidate_particle)
-            acceptance_rate = np.min(0, candidate_log_llh - last_log_llh)
+            acceptance_rate = np.min([0, candidate_log_llh - last_log_llh])
             acceptance_rate = np.exp(acceptance_rate)
             u = np.random.uniform(0, 1)
             if u < acceptance_rate:
-                mh_particle_trace[mh_particle_idx] = particle
-                mh_particle_weights[mh_particle_idx] = weight
+                mh_particle_trace[mh_particle_idx] = candidate_particle
+                mh_particle_weights[mh_particle_idx] = candidate_log_llh
                 mh_particle_idx += 1
             else:
                 acceptance_rate = 1e-1
                 u = np.random.uniform(0, 1)
                 if u < acceptance_rate:
-                    mh_particle_trace[mh_particle_idx] = particle
-                    mh_particle_weights[mh_particle_idx] = weight
+                    mh_particle_trace[mh_particle_idx] = candidate_particle
+                    mh_particle_weights[mh_particle_idx] = candidate_log_llh
                     mh_particle_idx += 1
+        return mh_particle_trace[mh_particle_idx], mh_particle_weights[mh_particle_idx]
 
     def _correct(self, kernel_idx: int):
-        sigma = self._get_sigma(kernel_idx, self.particle_trace)
-        last_sigma = self.kernel_params(kernel_idx - 1)
-        w = [last_sigma[i] / sigma[i] for i in range(0, len(sigma))]
+        w = 1 / np.abs(self.interval[0] - self.interval[1])
+        w = np.array([w] * self.particle_mh_trace_len)
         return w
 
     def _select(self, weights: np.array):
@@ -185,4 +170,4 @@ class SmcRfUniformKernel(object):
         return self._get_result()
 
     def _get_result(self):
-        return (self.particle_trace, self.particle_weights)
+        return (self.particle_mean, self.particle_trace, self.particle_weights)
