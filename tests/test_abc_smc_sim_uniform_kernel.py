@@ -2,11 +2,11 @@ import unittest
 
 import numpy as np
 
-from scripts.model.simple_prism_rf_model import SimpleRfModel
-from scripts.mc.smc_rf_uniform_kernel import SmcRfUniformKernel
+from scripts.model.simple_prism_sim_model import SimpleSimModel
+from scripts.mc.abc_smc_smc_uniform_kernel import AbcSmcSmcUniformKernel
 
 
-class TestSmcRfUniformKernel(unittest.TestCase):
+class TestSmcSimUniformKernel(unittest.TestCase):
     def setUp(self):
         self.prism_model_file = (
             "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_310.pm"
@@ -14,16 +14,18 @@ class TestSmcRfUniformKernel(unittest.TestCase):
         self.prism_props_file = (
             "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_310.pctl"
         )
-        self.model = SimpleRfModel(
+        self.model = SimpleSimModel(
             self.prism_model_file,
             self.prism_props_file,
+            obs_labels=["bscc_300", "bscc_202", "bscc_103", "bscc_013"],
         )
-        self.mc = SmcRfUniformKernel(
+        self.mc = AbcSmcSmcUniformKernel(
             model=self.model,
             interval=[0, 0.01],
             particle_dim=2,
             particle_trace_len=10,
-            kernel_count=100,
+            kernel_count=10,
+            abc_threshold=0.7,
             observed_data=[28, 12, 17, 43],
         )
 

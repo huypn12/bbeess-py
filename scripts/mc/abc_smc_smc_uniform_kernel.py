@@ -8,17 +8,18 @@ import stormpy.pars
 import numpy as np
 import scipy as sp
 
-from scripts.model.abstract_model import AbstractRationalModel
+from scripts.model.abstract_model import AbstractSimulationModel
 
 
-class SmcRfUniformKernel(object):
+class AbcSmcSmcUniformKernel(object):
     def __init__(
         self,
-        model: Type[AbstractRationalModel],
+        model: Type[AbstractSimulationModel],
         interval: Tuple[float],
         particle_dim: int,
         particle_trace_len: int,
         kernel_count: int,
+        abc_threshold: float,
         observed_data: List[int],
     ) -> None:
         self.model = model
@@ -29,13 +30,14 @@ class SmcRfUniformKernel(object):
             (particle_trace_len, particle_dim), dtype=float
         )
         self.particle_weights: np.array = np.zeros(particle_trace_len, dtype=float)
-        self.particle_llh: np.array = np.zeros(particle_trace_len, dtype=float)
-        self.particle_mh_trace_len: int = particle_trace_len
+        self.particle_distance: np.array = np.zeros(particle_trace_len, dtype=float)
+        self.particle_mh_trace_len: int = int(particle_trace_len / 2)
         self.particle_mean: np.array = np.zeros(particle_dim, dtype=float)
         self.kernel_count: int = kernel_count
         self.kernel_params: np.array = np.zeros(
             (kernel_count, particle_dim), dtype=float
         )
+        self.abc_threshold: float = abc_threshold
         self.observed_data = observed_data
 
     def _init(self):
@@ -43,11 +45,15 @@ class SmcRfUniformKernel(object):
         self.kernel_params[0] = sigma
         for idx in range(0, self.particle_trace_len):
             particle = self._next_particle(sigma)
-            llh = self.model.estimate_log_llh(particle, self.observed_data)
+            y_sim = self.model.simulate(particle, 20 * len(self.observed_data))
+            distance = self.model.estimate_distance(
+                self._to_stats_summary(y_sim),
+                self._to_stats_summary(self.observed_data),
+            )
             weight = 1
             self.particle_trace[idx] = particle
             self.particle_weights[idx] = weight
-            self.particle_llh[idx] = llh
+            self.particle_distance[idx] = distance
 
     def _get_interval(self, sigma: Optional[float]) -> Tuple[float]:
         l, u = self.interval
@@ -107,7 +113,7 @@ class SmcRfUniformKernel(object):
     def _pertubate(self):
         for idx in range(0, self.particle_trace_len):
             particle = self.particle_trace[idx]
-            weight = self.particle_llh[idx]
+            weight = self.particle_distance[idx]
             new_particle, _ = self._mh_transition(particle, weight)
             self._update_particle_by_idx(idx, particle=new_particle, weight=1)
 
@@ -122,12 +128,14 @@ class SmcRfUniformKernel(object):
         self._init()
         print(self.particle_trace)
         for t in range(1, self.kernel_count):
+            print(f"Kernel idx={t} threshold={self.abc_threshold}")
             # Correct
             self._correct(t)
             # Select
             self._select()
             # Mutation
             self._pertubate()
+            self.abc_threshold = self.abc_threshold * 0.75
         self._estimate_point()
 
     def _mh_init(
@@ -161,6 +169,9 @@ class SmcRfUniformKernel(object):
             particle[i] = np.random.uniform(*interval)
         return particle
 
+    def _to_stats_summary(self, cat: np.array) -> np.array:
+        return cat / np.sum(cat)
+
     def _mh_transition(
         self,
         particle: np.array,
@@ -169,7 +180,6 @@ class SmcRfUniformKernel(object):
         mh_particle_trace, mh_particle_weights = self._mh_init(particle, weight)
         mh_particle_idx = 1
         while mh_particle_idx < self.particle_mh_trace_len:
-            last_log_llh = mh_particle_weights[mh_particle_idx]
             candidate_particle = self._mh_next_particle(
                 mh_particle_idx, mh_particle_trace
             )
@@ -177,25 +187,28 @@ class SmcRfUniformKernel(object):
             if not candidate_sat:
                 continue
             y_sim = self.model.simulate(
-                candidate_particle, 100 * len(self.observed_data)
+                candidate_particle, 20 * len(self.observed_data)
             )
             candidate_distance = self.model.estimate_distance(
                 self._to_stats_summary(y_sim),
                 self._to_stats_summary(self.observed_data),
             )
-            acceptance_rate = np.min([0, candidate_log_llh - last_log_llh])
-            acceptance_rate = np.exp(acceptance_rate)
-            u = np.random.uniform(0, 1)
-            if u < acceptance_rate:
+            if candidate_distance < self.abc_threshold:
+                print(
+                    f"At {mh_particle_idx} append partilce={candidate_particle} distance={candidate_distance}"
+                )
                 mh_particle_trace[mh_particle_idx] = candidate_particle
-                mh_particle_weights[mh_particle_idx] = candidate_log_llh
+                mh_particle_weights[mh_particle_idx] = candidate_distance
                 mh_particle_idx += 1
             else:
-                acceptance_rate = 1e-1
+                acceptance_rate = 2e-1
                 u = np.random.uniform(0, 1)
                 if u < acceptance_rate:
+                    print(
+                        f"At {mh_particle_idx} append partilce={candidate_particle} distance={candidate_distance}"
+                    )
                     mh_particle_trace[mh_particle_idx] = candidate_particle
-                    mh_particle_weights[mh_particle_idx] = candidate_log_llh
+                    mh_particle_weights[mh_particle_idx] = candidate_distance
                     mh_particle_idx += 1
         mh_particle_idx -= 1
         return mh_particle_trace[mh_particle_idx], mh_particle_weights[mh_particle_idx]
