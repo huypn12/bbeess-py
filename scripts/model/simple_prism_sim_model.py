@@ -114,8 +114,8 @@ class SimpleSimModel(AbstractSimulationModel):
 
     def check_bounded(self, particle: np.array):
         self.prism_sprt_executor.set_prism_args(
-            simwidth=0.0005,
-            simconf=0.025,
+            simwidth=0.005,
+            simconf=0.05,
         )
         result = self.prism_sprt_executor.exec(
             self._model_params_to_prism_cmd_args(particle)

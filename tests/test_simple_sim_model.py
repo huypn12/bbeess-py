@@ -24,6 +24,10 @@ class TestSimpleSimModel(unittest.TestCase):
         result = self.model.check_bounded(true_params)
         self.assertFalse(result)
 
+        true_params = np.array([0.002, 0.007])
+        result = self.model.check_bounded(true_params)
+        self.assertTrue(result)
+
     def test_check_unbounded(self):
         true_params = np.array([0.005, 0.007])
         result = self.model.check_unbounded(true_params)
