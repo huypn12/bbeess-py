@@ -45,4 +45,10 @@ class TestSimpleSimModel(unittest.TestCase):
     def test_simulate(self):
         true_params = np.array([0.005, 0.007])
         result = self.model.simulate(true_params, 100)
+        print(result)
+        self.assertEqual(sum(result), 100)
+
+        true_params = np.array([0.002, 0.007])
+        result = self.model.simulate(true_params, 100)
+        print(result)
         self.assertEqual(sum(result), 100)

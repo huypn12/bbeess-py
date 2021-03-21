@@ -36,6 +36,7 @@ class SimpleRfModel(AbstractRationalModel):
         lines: List[str] = []
         with open(self.prism_props_file, "r") as fptr:
             lines = fptr.readlines()
+        self.prism_props_str = lines
         props_str = ";".join(lines)
         self.prism_props = stormpy.parse_properties_for_prism_program(
             props_str, self.prism_program
@@ -49,6 +50,9 @@ class SimpleRfModel(AbstractRationalModel):
         )
         # Property for checking
         self.check_prop_bounded = self.prism_props[0]
+        opstr, bound_value = self._extract_bounded_op_str(self.prism_props_str[0])
+        self.check_prop_bounded_opstr = opstr
+        self.check_prop_bounded_value = bound_value
         self.check_prop_unbounded = self.prism_props[1]
         self.check_rf_unbounded = stormpy.model_checking(
             self.model, self.check_prop_unbounded
@@ -76,20 +80,41 @@ class SimpleRfModel(AbstractRationalModel):
         instantiated_model = instantiator.instantiate(point)
         return instantiated_model
 
+    def _extract_bounded_op_str(self, prop_str: str):
+        prop_str = prop_str.split(" ")[0]
+        opstr = "".join([c for c in prop_str if c in "<>="])
+        if opstr not in [">", "<", ">=", "<="]:
+            raise ValueError(f"Unrecognized bound operation{opstr} in PCTL {prop_str}")
+        value_str = prop_str[prop_str.find(opstr) + len(opstr) :]
+        value = float(value_str)
+        return opstr, value
+
     def check_bounded(self, particle: np.array):
-        instantiated_model = self._instantiate(particle)
-        initial_state = self.model.initial_states[0]
-        result = stormpy.model_checking(instantiated_model, self.check_prop_bounded).at(
-            initial_state
-        )
-        return result
+        model_parameters = self.model.collect_probability_parameters()
+        point = dict()
+        for i, p in enumerate(model_parameters):
+            point[p] = stormpy.RationalRF(particle[i])
+        result = float(self.check_rf_unbounded.evaluate(point))
+        op = self.check_prop_bounded_opstr
+        if op == ">=":
+            return result >= self.check_prop_bounded_value
+        elif op == "<=":
+            return result <= self.check_prop_bounded_value
+        elif op == ">":
+            return result <= self.check_prop_bounded_value
+        elif op == "<":
+            return result <= self.check_prop_bounded_value
+        else:
+            raise ValueError(
+                f"Unable to compare boundary op={op} result={result} bound_value={self.check_prop_bounded_value}"
+            )
 
     def check_unbounded(self, particle: np.array):
-        instantiated_model = self._instantiate(particle)
-        initial_state = self.model.initial_states[0]
-        result = stormpy.model_checking(
-            instantiated_model, self.check_prop_unbounded
-        ).at(initial_state)
+        model_parameters = self.model.collect_probability_parameters()
+        point = dict()
+        for i, p in enumerate(model_parameters):
+            point[p] = stormpy.RationalRF(particle[i])
+        result = float(self.check_rf_unbounded.evaluate(point))
         return result
 
     def simulate(self, particle: np.array, sample_count: int):

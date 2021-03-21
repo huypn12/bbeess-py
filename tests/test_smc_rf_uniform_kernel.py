@@ -22,9 +22,9 @@ class TestSmcRfUniformKernel(unittest.TestCase):
             model=self.model,
             interval=[0, 0.01],
             particle_dim=2,
-            particle_trace_len=10,
+            particle_trace_len=100,
             kernel_count=100,
-            observed_data=[28, 12, 17, 43],
+            observed_data=[51, 20, 17, 12],
         )
 
     def test_exec(self):
