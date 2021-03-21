@@ -1,4 +1,4 @@
-P>=0.7 [ ! "bad" U "good" ]
+P>=0.7 [ ! "bad" U<4 "good" ]
 P=? [ ! "bad" U "good" ]
 P=? [ F "bscc_300" ]
 P=? [ F "bscc_202" ]

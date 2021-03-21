@@ -26,7 +26,7 @@ class TestSmcSimUniformKernel(unittest.TestCase):
             particle_trace_len=10,
             kernel_count=10,
             abc_threshold=0.7,
-            observed_data=[28, 12, 17, 43],
+            observed_data=[51, 20, 17, 12],
         )
 
     def test_exec(self):
