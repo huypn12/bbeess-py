@@ -126,10 +126,10 @@ class SirGenerator(object):
     def _gcmd_rate_rhs(self, rate: Tuple[int, int]):
         terms: List[str] = []
         if rate[0] != 0:
-            ca = f"{rate[0]}*a"
+            ca = f"{rate[0]}*{self.param_label_a}"
             terms.append(ca)
         if rate[1] != 0:
-            cb = f"{rate[1]}*b"
+            cb = f"{rate[1]}*{self.param_label_b}"
             terms.append(cb)
         expr: str = "+".join(terms)
         return f"({expr})"
@@ -144,7 +144,7 @@ class SirGenerator(object):
             terms.append(cb)
         rate_expr: str = "+".join(terms)
         uniform_expr = self._gcmd_rate_rhs(self.uniform_rate)
-        expr = f"(({rate_expr})/({uniform_expr}))"
+        expr = f"(({rate_expr})/{uniform_expr})"
         return expr
 
     def _compose_udtmc_model(self):
@@ -161,14 +161,15 @@ class SirGenerator(object):
                 )
                 next_terms.append(expr)
             trans_expr_lst.append(
-                " -> ".join([lhs_trans_expr, " + ".join(next_terms)]) + ";"
+                "[] " + " -> ".join([lhs_trans_expr, " + ".join(next_terms)]) + ";"
             )
         trans_str = "\n\t".join(trans_expr_lst)
-        prog_body: str = f"module {self.model_id}\n\t{trans_str}\nendmodule"
+        var_str = f"\n\ts : [0..{self.s0}] init {self.s0};\n\ti : [0..{self.s0}] init {self.i0};\n\tr : [0..{self.s0}] init {self.r0};"
+        prog_body: str = f"module {self.model_id}\n {var_str} {trans_str} \nendmodule"
         prog_header: str = f"dtmc\n  const double {self.param_label_a};\n  const double {self.param_label_b};"
         prog_foot: str = "\n".join(
             [
-                f'label "bscc_{bscc}" = {self._gcmd_node_lhs(self.node_list[bscc])}'
+                f'label "bscc_{bscc}" = {self._gcmd_node_lhs(self.node_list[bscc])} ;'
                 for bscc in self.bscc_nodes
             ]
         )
@@ -180,6 +181,6 @@ class SirGenerator(object):
 
 
 if __name__ == "__main__":
-    gen = SirGenerator(300, 1, 0)
+    gen = SirGenerator(10, 1, 0)
     gen.run()
-    gen.save("_model.prism")
+    gen.save("../prism/sir_10_1_0.pm")

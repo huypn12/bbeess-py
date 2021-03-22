@@ -23,7 +23,7 @@ class TestSmcRfUniformKernel(unittest.TestCase):
             interval=[0, 0.01],
             particle_dim=2,
             particle_trace_len=100,
-            kernel_count=100,
+            kernel_count=50,
             observed_data=[51, 20, 17, 12],
         )
 

@@ -1,5 +1,6 @@
 import abc
 from typing import List, Optional, Dict, Tuple, Any, Type
+import logging
 
 import stormpy
 import stormpy.core
@@ -116,11 +117,15 @@ class SmcRfUniformKernel(object):
         normalized_weight = self._normalize_weight()
         for i in range(0, self.particle_trace_len):
             particle += self.particle_trace[i] * normalized_weight[i]
+            self.particle_weights[i] = self.model.estimate_log_llh(
+                self.particle_trace[i], self.observed_data
+            )
         self.particle_mean = particle
 
     def run(self):
         self._init()
-        print(self.particle_trace)
+        logging.info("INIT TRACE")
+        logging.info(self.particle_trace)
         for t in range(1, self.kernel_count):
             # Correct
             self._correct(t)
@@ -128,6 +133,8 @@ class SmcRfUniformKernel(object):
             self._select()
             # Mutation
             self._pertubate()
+            logging.info(f"KERNEL {t}")
+            logging.info(self.particle_trace)
         self._estimate_point()
 
     def _mh_init(
