@@ -116,6 +116,8 @@ class SirGenerator(object):
         print(f"\t BSCC: {self.bscc_nodes}")
         self._compose_udtmc_model()
         print(f"COMPOSED PROGRAM DTMC\n{self.dtmc_prog}")
+        self._compose_udtmc_pctl()
+        print(f"COMPOSED PCTL PROPS\n{self.pctl_props}")
 
     def _gcmd_node_lhs(self, node: SirNode):
         return f"s={node.s} & i={node.i} & r={node.r}"
@@ -175,12 +177,19 @@ class SirGenerator(object):
         )
         self.dtmc_prog = "\n".join([prog_header, prog_body, prog_foot])
 
-    def save(self, path: str):
-        with open(path, "w") as fptr:
+    def _compose_udtmc_pctl(self):
+        self.pctl_props = "\n".join(
+            [f'P=? [F "bscc_{bscc}"]' for bscc in self.bscc_nodes]
+        )
+
+    def save(self, model_path: str, props_path: str):
+        self._save_model(model_path)
+        self._save_props(props_path)
+
+    def _save_model(self, model_path: str):
+        with open(model_path, "w") as fptr:
             fptr.write(self.dtmc_prog)
 
-
-if __name__ == "__main__":
-    gen = SirGenerator(10, 1, 0)
-    gen.run()
-    gen.save("../prism/sir_10_1_0.pm")
+    def _save_props(self, props_path: str):
+        with open(props_path, "w") as fptr:
+            fptr.write(self.pctl_props)

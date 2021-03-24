@@ -1,5 +1,6 @@
 import abc
 from typing import List, Optional, Dict, Tuple, Any, Type
+import logging
 
 import stormpy
 import stormpy.core
@@ -31,7 +32,7 @@ class AbcSmcSmcUniformKernel(object):
         )
         self.particle_weights: np.array = np.zeros(particle_trace_len, dtype=float)
         self.particle_distance: np.array = np.zeros(particle_trace_len, dtype=float)
-        self.particle_mh_trace_len: int = int(particle_trace_len / 2)
+        self.particle_mh_trace_len: int = 2
         self.particle_mean: np.array = np.zeros(particle_dim, dtype=float)
         self.kernel_count: int = kernel_count
         self.kernel_params: np.array = np.zeros(
@@ -135,7 +136,8 @@ class AbcSmcSmcUniformKernel(object):
             self._select()
             # Mutation
             self._pertubate()
-            self.abc_threshold = self.abc_threshold * 0.75
+            logging.info(f"KERNEL {t}")
+            logging.info(self.particle_trace)
         self._estimate_point()
 
     def _mh_init(
@@ -194,22 +196,10 @@ class AbcSmcSmcUniformKernel(object):
                 self._to_stats_summary(self.observed_data),
             )
             if candidate_distance < self.abc_threshold:
-                print(
-                    f"At {mh_particle_idx} append partilce={candidate_particle} distance={candidate_distance}"
-                )
+                print(f"Accepted particle: {candidate_particle} {candidate_distance}")
                 mh_particle_trace[mh_particle_idx] = candidate_particle
                 mh_particle_weights[mh_particle_idx] = candidate_distance
                 mh_particle_idx += 1
-            else:
-                acceptance_rate = 2e-1
-                u = np.random.uniform(0, 1)
-                if u < acceptance_rate:
-                    print(
-                        f"At {mh_particle_idx} append partilce={candidate_particle} distance={candidate_distance}"
-                    )
-                    mh_particle_trace[mh_particle_idx] = candidate_particle
-                    mh_particle_weights[mh_particle_idx] = candidate_distance
-                    mh_particle_idx += 1
         mh_particle_idx -= 1
         return mh_particle_trace[mh_particle_idx], mh_particle_weights[mh_particle_idx]
 
