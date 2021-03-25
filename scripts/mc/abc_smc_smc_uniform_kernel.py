@@ -31,8 +31,6 @@ class AbcSmcSmcUniformKernel(object):
             (particle_trace_len, particle_dim), dtype=float
         )
         self.particle_weights: np.array = np.zeros(particle_trace_len, dtype=float)
-        self.particle_distance: np.array = np.zeros(particle_trace_len, dtype=float)
-        self.particle_mh_trace_len: int = 2
         self.particle_mean: np.array = np.zeros(particle_dim, dtype=float)
         self.kernel_count: int = kernel_count
         self.kernel_params: np.array = np.zeros(
@@ -48,8 +46,8 @@ class AbcSmcSmcUniformKernel(object):
             particle = self._next_particle(sigma)
             y_sim = self.model.simulate(particle, 20 * len(self.observed_data))
             distance = self.model.estimate_distance(
-                self._to_stats_summary(y_sim),
-                self._to_stats_summary(self.observed_data),
+                self._average(y_sim),
+                self._average(self.observed_data),
             )
             weight = 1
             self.particle_trace[idx] = particle
@@ -73,13 +71,8 @@ class AbcSmcSmcUniformKernel(object):
             sigma[i] = 0.5 * (_max - _min)
         return sigma
 
-    def _update_particle_by_idx(self, idx: int, particle: np.array, weight: float):
-        assert len(particle) == self.particle_dim
-        self.particle_trace[idx] = particle
-        self.particle_weights[idx] = weight
-
     def _normalize_weight(self) -> np.array:
-        return self.particle_weights / np.sum(self.particle_weights)
+        return self._average(self.particle_weights)
 
     def _next_particle(self, sigma: Optional[np.array]) -> np.array:
         assert len(sigma) == self.particle_dim
@@ -113,10 +106,26 @@ class AbcSmcSmcUniformKernel(object):
 
     def _pertubate(self):
         for idx in range(0, self.particle_trace_len):
-            particle = self.particle_trace[idx]
-            weight = self.particle_distance[idx]
-            new_particle, _ = self._mh_transition(particle, weight)
-            self._update_particle_by_idx(idx, particle=new_particle, weight=1)
+            sigma = self._get_sigma()
+            candidate_found = False
+            while not candidate_found:
+                candidate_particle = self._next_particle(sigma)
+                candidate_sat = self.model.check_bounded(candidate_particle)
+                if not candidate_sat:
+                    continue
+                y_sim = self.model.simulate(
+                    candidate_particle, 50 * len(self.observed_data)
+                )
+                candidate_distance = self.model.estimate_distance(
+                    self._average(y_sim),
+                    self._average(self.observed_data),
+                )
+                if candidate_distance < self.abc_threshold:
+                    logging.info(
+                        f"Accepted particle: {candidate_particle} {candidate_distance}"
+                    )
+                    self.particle_trace[idx] = candidate_particle
+                    self.particle_weights[idx] = candidate_distance
 
     def _estimate_point(self) -> np.array:
         particle = np.zeros(self.particle_dim)
@@ -127,81 +136,21 @@ class AbcSmcSmcUniformKernel(object):
 
     def run(self):
         self._init()
-        print(self.particle_trace)
         for t in range(1, self.kernel_count):
-            print(f"Kernel idx={t} threshold={self.abc_threshold}")
+            logging.info(f"Kernel idx={t} threshold={self.abc_threshold}")
             # Correct
             self._correct(t)
             # Select
             self._select()
             # Mutation
             self._pertubate()
+            # Logging
             logging.info(f"KERNEL {t}")
             logging.info(self.particle_trace)
         self._estimate_point()
 
-    def _mh_init(
-        self,
-        particle: np.array,
-        weight: float,
-    ):
-        mh_particle_trace: np.array = np.zeros(
-            (self.particle_mh_trace_len, self.particle_dim), dtype=float
-        )
-        mh_particle_weights: np.array = np.zeros(self.particle_mh_trace_len)
-        mh_particle_trace[0] = particle
-        mh_particle_weights[0] = weight
-        return mh_particle_trace, mh_particle_weights
-
-    def _mh_get_sigma(self, particle_idx: int, particle_trace: np.array):
-        sigma = np.zeros(self.particle_dim)
-        for i in range(0, self.particle_dim):
-            _min = np.amin(particle_trace[0 : particle_idx + 1, i])
-            _max = np.amax(particle_trace[0 : particle_idx + 1, i])
-            sigma[i] = 0.5 * (_max - _min)
-        return sigma
-
-    def _mh_next_particle(
-        self, mh_particle_idx: int, mh_particle_trace: np.array
-    ) -> np.array:
-        sigma = self._mh_get_sigma(mh_particle_idx, mh_particle_trace)
-        particle = np.zeros(self.particle_dim)
-        for i in range(0, self.particle_dim):
-            interval = self._get_interval(sigma)
-            particle[i] = np.random.uniform(*interval)
-        return particle
-
-    def _to_stats_summary(self, cat: np.array) -> np.array:
+    def _average(self, cat: np.array) -> np.array:
         return cat / np.sum(cat)
-
-    def _mh_transition(
-        self,
-        particle: np.array,
-        weight: float,
-    ) -> Tuple[np.array, float]:
-        mh_particle_trace, mh_particle_weights = self._mh_init(particle, weight)
-        mh_particle_idx = 1
-        while mh_particle_idx < self.particle_mh_trace_len:
-            candidate_particle = self._mh_next_particle(
-                mh_particle_idx, mh_particle_trace
-            )
-            candidate_sat = self.model.check_bounded(candidate_particle)
-            if not candidate_sat:
-                continue
-            y_sim = self.model.simulate(
-                candidate_particle, 20 * len(self.observed_data)
-            )
-            candidate_distance = self.model.estimate_distance(
-                self._to_stats_summary(y_sim),
-                self._to_stats_summary(self.observed_data),
-            )
-            if candidate_distance < self.abc_threshold:
-                print(f"Accepted particle: {candidate_particle} {candidate_distance}")
-                mh_particle_trace[mh_particle_idx] = candidate_particle
-                mh_particle_weights[mh_particle_idx] = candidate_distance
-                mh_particle_idx += 1
-        mh_particle_idx -= 1
-        return mh_particle_trace[mh_particle_idx], mh_particle_weights[mh_particle_idx]
 
     def get_result(self):
         return (self.particle_mean, self.particle_trace, self.particle_weights)
