@@ -131,7 +131,6 @@ class SimpleSimModel(AbstractSimulationModel):
         return result
 
     def simulate(self, particle: np.array, sample_count: int):
-        # ToDo: parallelize
         model_params = self.model.collect_probability_parameters()
         assert len(particle) == len(model_params)
         point = dict()
