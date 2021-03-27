@@ -44,15 +44,13 @@ class AbcSmcSmcUniformKernel(object):
         self.kernel_params[0] = sigma
         for idx in range(0, self.particle_trace_len):
             particle = self._next_particle(sigma)
-            y_sim = self.model.simulate(particle, 20 * len(self.observed_data))
+            y_sim = self.model.simulate(particle, 1000 * len(self.observed_data))
             distance = self.model.estimate_distance(
                 self._average(y_sim),
                 self._average(self.observed_data),
             )
-            weight = 1
             self.particle_trace[idx] = particle
-            self.particle_weights[idx] = weight
-            self.particle_distance[idx] = distance
+            self.particle_weights[idx] = distance
 
     def _get_interval(self, sigma: Optional[float]) -> Tuple[float]:
         l, u = self.interval
@@ -72,6 +70,13 @@ class AbcSmcSmcUniformKernel(object):
         return sigma
 
     def _normalize_weight(self) -> np.array:
+        epsilon = 1e-6
+        for i in range(0, len(self.particle_weights)):
+            self.particle_weights[i] = (
+                1 / self.particle_weights[i]
+                if self.particle_weights[i] > epsilon
+                else 1 / (self.particle_weights[i] + epsilon)
+            )
         return self._average(self.particle_weights)
 
     def _next_particle(self, sigma: Optional[np.array]) -> np.array:
@@ -114,16 +119,17 @@ class AbcSmcSmcUniformKernel(object):
                 if not candidate_sat:
                     continue
                 y_sim = self.model.simulate(
-                    candidate_particle, 50 * len(self.observed_data)
+                    candidate_particle, 1000 * len(self.observed_data)
                 )
                 candidate_distance = self.model.estimate_distance(
                     self._average(y_sim),
                     self._average(self.observed_data),
                 )
                 if candidate_distance < self.abc_threshold:
-                    logging.info(
+                    print(
                         f"Accepted particle: {candidate_particle} {candidate_distance}"
                     )
+                    candidate_found = True
                     self.particle_trace[idx] = candidate_particle
                     self.particle_weights[idx] = candidate_distance
 
@@ -145,7 +151,7 @@ class AbcSmcSmcUniformKernel(object):
             # Mutation
             self._pertubate()
             # Logging
-            logging.info(f"KERNEL {t}")
+            print(f"KERNEL {t}")
             logging.info(self.particle_trace)
         self._estimate_point()
 
