@@ -1,4 +1,5 @@
 import datetime
+import sys
 import logging
 
 logging.basicConfig(
@@ -98,5 +99,14 @@ def do_all_experiments():
 
 
 if __name__ == "__main__":
-    do_all_experiments()
+    m = sys.argv[1]
+    if m == "5":
+        do_experiment_sir5()
+    elif m == "10":
+        do_experiment_sir10()
+    elif m == "15":
+        do_experiment_sir15()
+    else:
+        raise ValueError(f"Unsupported option {m}")
+    logging.shutdown()
     logging.shutdown()

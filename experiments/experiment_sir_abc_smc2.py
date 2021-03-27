@@ -2,6 +2,7 @@ from datetime import datetime
 import logging
 from timeit import default_timer as timer
 from typing import List
+import sys
 
 logging.basicConfig(
     filename=f"experiment_sir_abc_smc2_{str(datetime.now())}.log",
@@ -147,5 +148,13 @@ def do_all_experiments():
 
 
 if __name__ == "__main__":
-    do_all_experiments()
+    m = sys.argv[1]
+    if m == "5":
+        do_experiment_sir5()
+    elif m == "10":
+        do_experiment_sir10()
+    elif m == "15":
+        do_experiment_sir15()
+    else:
+        raise ValueError(f"Unsupported option {m}")
     logging.shutdown()
