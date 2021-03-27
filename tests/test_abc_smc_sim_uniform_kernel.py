@@ -9,10 +9,10 @@ from scripts.mc.abc_smc_smc_uniform_kernel import AbcSmcSmcUniformKernel
 class TestSmcSimUniformKernel(unittest.TestCase):
     def setUp(self):
         self.prism_model_file = (
-            "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_310.pm"
+            "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_3_1_0.pm"
         )
         self.prism_props_file = (
-            "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_310.pctl"
+            "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_3_1_0.pctl"
         )
         self.model = SimpleSimModel(
             self.prism_model_file,
@@ -25,7 +25,7 @@ class TestSmcSimUniformKernel(unittest.TestCase):
             particle_dim=2,
             particle_trace_len=10,
             kernel_count=10,
-            abc_threshold=0.7,
+            abc_threshold=0.1,
             observed_data=[51, 20, 17, 12],
         )
 
