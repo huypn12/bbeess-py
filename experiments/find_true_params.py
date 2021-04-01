@@ -35,6 +35,7 @@ class FindTrueParams(object):
             alpha = np.random.uniform(*self.interval)
             beta = np.random.uniform(*self.interval)
             sat = self.model.check_bounded(np.array([alpha, beta]))
+            print(sat)
             if sat:
                 self.true_params.append(np.array([alpha, beta]))
                 logging.info(
@@ -53,6 +54,7 @@ class FindTrueParams(object):
 
 
 def main():
+    """
     prism_model_file: str = "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_5_1_0.pm"
     prism_props_file: str = (
         "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_5_1_0.pctl"
@@ -68,7 +70,7 @@ def main():
     )
     experiment = FindTrueParams(prism_model_file, prism_props_file, (0, 0.1))
     experiment.exec()
-
+    """
     prism_model_file: str = (
         "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_15_1_0.pm"
     )

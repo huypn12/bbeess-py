@@ -165,16 +165,29 @@ class SirGenerator(object):
             trans_expr_lst.append(
                 "[] " + " -> ".join([lhs_trans_expr, " + ".join(next_terms)]) + ";"
             )
+        for bscc_id in self.bscc_nodes:
+            trans_expr_lst.append(
+                "[] "
+                + " -> ".join(
+                    [
+                        self._gcmd_node_lhs(self.node_list[bscc_id]),
+                        self._gcmd_node_rhs(self.node_list[bscc_id]),
+                    ]
+                )
+                + ";"
+            )
         trans_str = "\n\t".join(trans_expr_lst)
         var_str = f"\n\ts : [0..{self.s0}] init {self.s0};\n\ti : [0..{self.s0}] init {self.i0};\n\tr : [0..{self.s0}] init {self.r0};"
         prog_body: str = f"module {self.model_id}\n {var_str} {trans_str} \nendmodule"
-        prog_header: str = f"dtmc\n  const double {self.param_label_a};\n  const double {self.param_label_b};"
+        prog_header: str = f"dtmc\n  const double {self.param_label_a};\n  const double {self.param_label_b};\n"
         prog_foot: str = "\n".join(
             [
                 f'label "bscc_{bscc}" = {self._gcmd_node_lhs(self.node_list[bscc])} ;'
                 for bscc in self.bscc_nodes
             ]
         )
+        prog_foot += f"\n// Number of states: {len(self.node_list)}"
+        prog_foot += f"\n// Number of BSCCs: {len(self.bscc_nodes)}"
         self.dtmc_prog = "\n".join([prog_header, prog_body, prog_foot])
 
     def _compose_udtmc_pctl(self):

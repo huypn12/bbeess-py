@@ -1,4 +1,5 @@
 import abc
+from datetime import datetime
 from typing import List, Optional, Dict, Tuple, Any, Type
 import logging
 
@@ -127,14 +128,14 @@ class SmcRfUniformKernel(object):
         logging.info("INIT TRACE")
         logging.info(self.particle_trace)
         for t in range(1, self.kernel_count):
+            logging.info(f"{str(datetime.now())} START KERNEL {t}")
             # Correct
             self._correct(t)
             # Select
             self._select()
             # Mutation
             self._pertubate()
-            logging.info(f"KERNEL {t}")
-            logging.info(self.particle_trace)
+            logging.info(f"{str(datetime.now())} FINISH KERNEL {t}")
         self._estimate_point()
 
     def _mh_init(

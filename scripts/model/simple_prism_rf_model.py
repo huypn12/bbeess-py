@@ -53,12 +53,14 @@ class SimpleRfModel(AbstractRationalModel):
         opstr, bound_value = self._extract_bounded_op_str(self.prism_props_str[0])
         self.check_prop_bounded_opstr = opstr
         self.check_prop_bounded_value = bound_value
-        self.check_prop_unbounded = self.prism_props[1]
+        self.check_prop_unbounded = self._replace_bounded_op_str(
+            self.check_props_str[0], bound_value
+        )
         self.check_rf_unbounded = stormpy.model_checking(
             self.model, self.check_prop_unbounded
         ).at(self.model.initial_states[0])
         # Properties for observing
-        self.obs_props = self.prism_props[2:]
+        self.obs_props = self.prism_props[1:]
         self.obs_rf = [
             stormpy.model_checking(self.model, obs_prop).at(
                 self.model.initial_states[0]
@@ -88,6 +90,11 @@ class SimpleRfModel(AbstractRationalModel):
         value_str = prop_str[prop_str.find(opstr) + len(opstr) :]
         value = float(value_str)
         return opstr, value
+
+    def _replace_bounded_op_str(self, prop_str: str, value: float):
+        prop_str_tokens = prop_str.split(" ")
+        prop_str_tokens[0] = f"P=?{value}"
+        return " ".join(prop_str_tokens)
 
     def check_bounded(self, particle: np.array):
         model_parameters = self.model.collect_probability_parameters()
