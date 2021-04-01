@@ -1,4 +1,5 @@
 import abc
+from datetime import datetime
 from typing import List, Optional, Dict, Tuple, Any, Type
 import logging
 
@@ -126,9 +127,6 @@ class AbcSmcSmcUniformKernel(object):
                     self._average(self.observed_data),
                 )
                 if candidate_distance < self.abc_threshold:
-                    print(
-                        f"Accepted particle: {candidate_particle} {candidate_distance}"
-                    )
                     candidate_found = True
                     self.particle_trace[idx] = candidate_particle
                     self.particle_weights[idx] = candidate_distance
@@ -143,7 +141,9 @@ class AbcSmcSmcUniformKernel(object):
     def run(self):
         self._init()
         for t in range(1, self.kernel_count):
-            logging.info(f"Kernel idx={t} threshold={self.abc_threshold}")
+            logging.info(
+                f"{str(datetime.now())} Start kernel {t} threshold={self.abc_threshold}"
+            )
             # Correct
             self._correct(t)
             # Select
@@ -151,8 +151,9 @@ class AbcSmcSmcUniformKernel(object):
             # Mutation
             self._pertubate()
             # Logging
-            print(f"KERNEL {t}")
-            logging.info(self.particle_trace)
+            logging.info(
+                f"{str(datetime.now())} Finish kernel {t} threshold={self.abc_threshold}"
+            )
         self._estimate_point()
 
     def _average(self, cat: np.array) -> np.array:

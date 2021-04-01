@@ -1,11 +1,9 @@
-import datetime
+from typing import Tuple, List
+
 import sys
 import logging
-
-logging.basicConfig(
-    filename=f"experiment_sir_smc_rf_{str(datetime.time(datetime.now()))}.log",
-    level=logging.DEBUG,
-)
+from datetime import datetime
+from timeit import default_timer as timer
 
 import numpy as np
 
@@ -13,43 +11,78 @@ from scripts.model.simple_prism_rf_model import SimpleRfModel
 from scripts.mc.smc_rf_uniform_kernel import SmcRfUniformKernel
 
 
+logging.basicConfig(
+    filename=f"experiment_sir_smc_rf_{str(datetime.time(datetime.now()))}.log",
+    level=logging.DEBUG,
+)
+
+
+gConfig = {
+    "sir5_true_param": np.array([0.017246491978609703, 0.067786043574277]),
+    "sir5_observed_data": np.array([421, 834, 1126, 1362, 1851, 4406]),
+    "sir10_true_param": np.array([0.01099297054879006, 0.035355703902286616]),
+    "sir10_observed_data": np.array(
+        [563, 976, 1016, 909, 764, 696, 606, 565, 603, 855, 2447]
+    ),
+    "sir15_true_param": np.array([0.004132720013578173, 0.07217656035559976]),
+    "sir15_observed_data": np.array(
+        [0, 0, 0, 1, 4, 12, 29, 37, 96, 177, 283, 459, 619, 1078, 1845, 5360]
+    ),
+}
+
+
 class ExperimentSirSmcRf:
-    def __init__(self, prism_model_file: str, prism_props_file: str):
+    def __init__(
+        self,
+        prism_model_file: str,
+        prism_props_file: str,
+        interval: Tuple[float, float],
+        true_param: np.array,
+        observed_data: np.array,
+    ):
         self.prism_model_file = prism_model_file
         self.prism_props_file = prism_props_file
         self.model = SimpleRfModel(
             self.prism_model_file,
             self.prism_props_file,
         )
-        logging.info(">>>>> Start experiments")
-        self.true_param = np.array([0.002, 0.007])
-        result = self.model.check_bounded(self.true_param)
-        assert result is True
-        logging.info(f"True parameter (SAT): {self.true_param}")
-
-    def simulate(self):
-        self.synthetic_data = self.model.simulate(self.true_param, 2000)
-        logging.info(f"Synthetic data: {self.synthetic_data}")
+        self.interval = interval
+        self.true_param = true_param
+        self.observed_data = observed_data
+        logging.info(f"{str(datetime.now())} Start experiments")
+        print("interval: ", interval)
+        is_sat = self.model.check_bounded(self.true_param)
+        assert is_sat == True
+        logging.info(f"{str(datetime.now())} True parameter (SAT): {self.true_param}")
+        logging.info(f"{str(datetime.now())} Synthetic data: {self.observed_data}")
+        self.summary = {
+            "prism_model_file": self.prism_model_file,
+            "prism_props_file": self.prism_props_file,
+            "interval": self.interval,
+            "true_param": self.true_param,
+            "observed_data": self.observed_data,
+        }
 
     def exec(self):
-        self.simulate()
+        start_time = datetime.now()
         self.mc = SmcRfUniformKernel(
             model=self.model,
-            interval=[0, 0.1],
+            interval=self.interval,
             particle_dim=2,
             particle_trace_len=200,
-            kernel_count=25,
-            observed_data=self.synthetic_data,
+            kernel_count=20,
+            observed_data=self.observed_data,
         )
+        end_time = datetime.now()
         self.mc.run()
         particle_mean, trace, weights = self.mc.get_result()
-        logging.info("PARTICLE MEAN")
-        logging.info(particle_mean)
-        logging.info("PARTICLE TRACE")
+        logging.info(f"{str(datetime.now())} Particle trace")
         logging.info(trace)
-        logging.info("PARTICLE WEIGHTS")
+        logging.info(f"{str(datetime.now())} Particle mean")
+        logging.info(particle_mean)
+        logging.info(f"{str(datetime.now())} Particle weights")
         logging.info(weights)
-        logging.info(">>>>> End experiments")
+        logging.info(f"{str(datetime.now())} End experiments")
 
 
 def do_experiment_sir5():
@@ -60,6 +93,9 @@ def do_experiment_sir5():
     experiment = ExperimentSirSmcRf(
         prism_model_file=prism_model_file,
         prism_props_file=prism_props_file,
+        interval=(0, 0.1),
+        true_param=np.array([0.017246491978609703, 0.067786043574277]),
+        observed_data=np.array([421, 834, 1126, 1362, 1851, 4406]),
     )
     experiment.exec()
 
@@ -74,6 +110,11 @@ def do_experiment_sir10():
     experiment = ExperimentSirSmcRf(
         prism_model_file=prism_model_file,
         prism_props_file=prism_props_file,
+        interval=(0, 0.1),
+        true_param=np.array([0.01099297054879006, 0.035355703902286616]),
+        observed_data=np.array(
+            [563, 976, 1016, 909, 764, 696, 606, 565, 603, 855, 2447]
+        ),
     )
     experiment.exec()
 
@@ -88,6 +129,11 @@ def do_experiment_sir15():
     experiment = ExperimentSirSmcRf(
         prism_model_file=prism_model_file,
         prism_props_file=prism_props_file,
+        interval=(0, 0.1),
+        true_param=np.array([0.004132720013578173, 0.07217656035559976]),
+        observed_data=np.array(
+            [0, 0, 0, 1, 4, 12, 29, 37, 96, 177, 283, 459, 619, 1078, 1845, 5360]
+        ),
     )
     experiment.exec()
 
@@ -108,5 +154,4 @@ if __name__ == "__main__":
         do_experiment_sir15()
     else:
         raise ValueError(f"Unsupported option {m}")
-    logging.shutdown()
     logging.shutdown()

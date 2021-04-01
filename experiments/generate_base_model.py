@@ -12,6 +12,7 @@ def generate_base_model(s0: int, i0: int, r0: int):
 
 
 if __name__ == "__main__":
+    generate_base_model(3, 1, 0)
     generate_base_model(5, 1, 0)
     generate_base_model(15, 1, 0)
     generate_base_model(20, 1, 0)

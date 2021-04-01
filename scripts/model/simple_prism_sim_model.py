@@ -55,6 +55,12 @@ class SimpleSimModel(AbstractSimulationModel):
         )
         # Property for checking
         self.check_prop_bounded = self.prism_props[0]
+        opstr, bound_value = self._extract_bounded_op_str(self.prism_props_str[0])
+        self.check_prop_bounded_opstr = opstr
+        self.check_prop_bounded_value = bound_value
+        self.check_prop_unbounded = self._replace_bounded_op_str(
+            self.check_props_str[0], bound_value
+        )
         self.check_prop_unbounded = self.prism_props[1]
         # Properties for observing
         self.obs_props = self.prism_props[2:]
@@ -62,6 +68,20 @@ class SimpleSimModel(AbstractSimulationModel):
         self.state_mapping: Dict[int, List[str]] = {}
         for state in self.model.states:
             self.state_mapping[state.id] = [label for label in state.labels]
+
+    def _extract_bounded_op_str(self, prop_str: str):
+        prop_str = prop_str.split(" ")[0]
+        opstr = "".join([c for c in prop_str if c in "<>="])
+        if opstr not in [">", "<", ">=", "<="]:
+            raise ValueError(f"Unrecognized bound operation{opstr} in PCTL {prop_str}")
+        value_str = prop_str[prop_str.find(opstr) + len(opstr) :]
+        value = float(value_str)
+        return opstr, value
+
+    def _replace_bounded_op_str(self, prop_str: str, value: float):
+        prop_str_tokens = prop_str.split(" ")
+        prop_str_tokens[0] = f"P=?{value}"
+        return " ".join(prop_str_tokens)
 
     def _load(self):
         self._load_model_file()
