@@ -1,11 +1,12 @@
 dtmc
   const double alpha;
   const double beta;
-module sir_10_1_0
+
+module sir_10_1_0 
+	s : [0..11] init 10;
+	i : [0..11] init 1;
+	r : [0..11] init 0;
  
-	s : [0..10] init 10;
-	i : [0..10] init 1;
-	r : [0..10] init 0;
 	[] s=10 & i=1 & r=0 -> ((10*alpha)/(10*alpha+11*beta)):(s'=9) & (i'=2) & (r'=0) + ((1*beta)/(10*alpha+11*beta)):(s'=10) & (i'=0) & (r'=1) + ((10*beta)/(10*alpha+11*beta)):(s'=10) & (i'=1) & (r'=0);
 	[] s=9 & i=2 & r=0 -> ((9*alpha)/(10*alpha+11*beta)):(s'=8) & (i'=3) & (r'=0) + ((2*beta)/(10*alpha+11*beta)):(s'=9) & (i'=1) & (r'=1) + ((1*alpha+9*beta)/(10*alpha+11*beta)):(s'=9) & (i'=2) & (r'=0);
 	[] s=8 & i=3 & r=0 -> ((8*alpha)/(10*alpha+11*beta)):(s'=7) & (i'=4) & (r'=0) + ((3*beta)/(10*alpha+11*beta)):(s'=8) & (i'=2) & (r'=1) + ((2*alpha+8*beta)/(10*alpha+11*beta)):(s'=8) & (i'=3) & (r'=0);
@@ -71,8 +72,20 @@ module sir_10_1_0
 	[] s=7 & i=1 & r=3 -> ((7*alpha)/(10*alpha+11*beta)):(s'=6) & (i'=2) & (r'=3) + ((1*beta)/(10*alpha+11*beta)):(s'=7) & (i'=0) & (r'=4) + ((3*alpha+10*beta)/(10*alpha+11*beta)):(s'=7) & (i'=1) & (r'=3);
 	[] s=8 & i=2 & r=1 -> ((8*alpha)/(10*alpha+11*beta)):(s'=7) & (i'=3) & (r'=1) + ((2*beta)/(10*alpha+11*beta)):(s'=8) & (i'=1) & (r'=2) + ((2*alpha+9*beta)/(10*alpha+11*beta)):(s'=8) & (i'=2) & (r'=1);
 	[] s=8 & i=1 & r=2 -> ((8*alpha)/(10*alpha+11*beta)):(s'=7) & (i'=2) & (r'=2) + ((1*beta)/(10*alpha+11*beta)):(s'=8) & (i'=0) & (r'=3) + ((2*alpha+10*beta)/(10*alpha+11*beta)):(s'=8) & (i'=1) & (r'=2);
-	[] s=9 & i=1 & r=1 -> ((9*alpha)/(10*alpha+11*beta)):(s'=8) & (i'=2) & (r'=1) + ((1*beta)/(10*alpha+11*beta)):(s'=9) & (i'=0) & (r'=2) + ((1*alpha+10*beta)/(10*alpha+11*beta)):(s'=9) & (i'=1) & (r'=1); 
+	[] s=9 & i=1 & r=1 -> ((9*alpha)/(10*alpha+11*beta)):(s'=8) & (i'=2) & (r'=1) + ((1*beta)/(10*alpha+11*beta)):(s'=9) & (i'=0) & (r'=2) + ((1*alpha+10*beta)/(10*alpha+11*beta)):(s'=9) & (i'=1) & (r'=1);
+	[] s=0 & i=0 & r=11 -> (s'=0) & (i'=0) & (r'=11);
+	[] s=1 & i=0 & r=10 -> (s'=1) & (i'=0) & (r'=10);
+	[] s=2 & i=0 & r=9 -> (s'=2) & (i'=0) & (r'=9);
+	[] s=3 & i=0 & r=8 -> (s'=3) & (i'=0) & (r'=8);
+	[] s=4 & i=0 & r=7 -> (s'=4) & (i'=0) & (r'=7);
+	[] s=5 & i=0 & r=6 -> (s'=5) & (i'=0) & (r'=6);
+	[] s=6 & i=0 & r=5 -> (s'=6) & (i'=0) & (r'=5);
+	[] s=7 & i=0 & r=4 -> (s'=7) & (i'=0) & (r'=4);
+	[] s=8 & i=0 & r=3 -> (s'=8) & (i'=0) & (r'=3);
+	[] s=9 & i=0 & r=2 -> (s'=9) & (i'=0) & (r'=2);
+	[] s=10 & i=0 & r=1 -> (s'=10) & (i'=0) & (r'=1); 
 endmodule
+
 // r > 6
 label "bscc_k_0_gt6" = s=0 & i=0 & r=11 | s=1 & i=0 & r=10 | s=2 & i=0 & r=9 | s=3 & i=0 & r=8 | s=4 & i=0 & r=7 ;
 // r <= 6
