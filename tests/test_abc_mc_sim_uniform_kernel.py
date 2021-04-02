@@ -10,15 +10,15 @@ from scripts.mc.abc_mc_smc_uniform_kernel import AbcMcSmcUniformKernel
 class TestAbcMcSimUniformKernel(unittest.TestCase):
     def setUp(self):
         self.prism_model_file = (
-            "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_310.pm"
+            "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_3_1_0.pm"
         )
         self.prism_props_file = (
-            "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_310.pctl"
+            "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_3_1_0.pctl"
         )
         self.model = SimpleSimModel(
             self.prism_model_file,
             self.prism_props_file,
-            obs_labels=["bscc_300", "bscc_202", "bscc_103", "bscc_013"],
+            obs_labels=["bscc_0_0_4", "bscc_1_0_3", "bscc_2_0_2", "bscc_3_0_1"],
         )
         self.mc = AbcMcSmcUniformKernel(
             model=self.model,

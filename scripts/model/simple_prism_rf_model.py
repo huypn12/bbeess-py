@@ -28,16 +28,37 @@ class SimpleRfModel(AbstractRationalModel):
         # initiate
         self._load()
 
-    def _load_model_file(self):
+    def _load_prism_program(self):
         self.prism_program = stormpy.parse_prism_program(self.prism_model_file)
         assert self.prism_program is not None
 
-    def _load_props_file(self):
+    def _extract_bounded_op_str(self, prop_str: str):
+        prop_str = prop_str.split(" ")[0]
+        opstr = "".join([c for c in prop_str if c in "<>="])
+        if opstr not in [">", "<", ">=", "<="]:
+            raise ValueError(f"Unrecognized bound operation{opstr} in PCTL {prop_str}")
+        value_str = prop_str[prop_str.find(opstr) + len(opstr) :]
+        value = float(value_str)
+        return opstr, value
+
+    def _replace_bounded_op_str(self, prop_str: str):
+        prop_str_tokens = prop_str.split(" ")
+        prop_str_tokens[0] = "P=?"
+        return " ".join(prop_str_tokens)
+
+    def _load_prism_props(self):
         lines: List[str] = []
         with open(self.prism_props_file, "r") as fptr:
             lines = fptr.readlines()
         self.prism_props_str = lines
-        props_str = ";".join(lines)
+        opstr, bound_value = self._extract_bounded_op_str(self.prism_props_str[0])
+        self.check_prop_bounded_opstr = opstr
+        self.check_prop_bounded_value = bound_value
+        self.check_prop_unbounded_str = self._replace_bounded_op_str(
+            self.prism_props_str[0]
+        )
+        self.prism_props_str.insert(1, self.check_prop_unbounded_str)
+        props_str = ";".join(self.prism_props_str)
         self.prism_props = stormpy.parse_properties_for_prism_program(
             props_str, self.prism_program
         )
@@ -50,17 +71,12 @@ class SimpleRfModel(AbstractRationalModel):
         )
         # Property for checking
         self.check_prop_bounded = self.prism_props[0]
-        opstr, bound_value = self._extract_bounded_op_str(self.prism_props_str[0])
-        self.check_prop_bounded_opstr = opstr
-        self.check_prop_bounded_value = bound_value
-        self.check_prop_unbounded = self._replace_bounded_op_str(
-            self.check_props_str[0], bound_value
-        )
+        self.check_prop_unbounded = self.prism_props[1]
         self.check_rf_unbounded = stormpy.model_checking(
             self.model, self.check_prop_unbounded
         ).at(self.model.initial_states[0])
         # Properties for observing
-        self.obs_props = self.prism_props[1:]
+        self.obs_props = self.prism_props[2:]
         self.obs_rf = [
             stormpy.model_checking(self.model, obs_prop).at(
                 self.model.initial_states[0]
@@ -69,8 +85,8 @@ class SimpleRfModel(AbstractRationalModel):
         ]
 
     def _load(self):
-        self._load_model_file()
-        self._load_props_file()
+        self._load_prism_program()
+        self._load_prism_props()
         self._load_rf()
 
     def _instantiate(self, particle: np.array):
@@ -81,20 +97,6 @@ class SimpleRfModel(AbstractRationalModel):
             point[p] = stormpy.RationalRF(particle[i])
         instantiated_model = instantiator.instantiate(point)
         return instantiated_model
-
-    def _extract_bounded_op_str(self, prop_str: str):
-        prop_str = prop_str.split(" ")[0]
-        opstr = "".join([c for c in prop_str if c in "<>="])
-        if opstr not in [">", "<", ">=", "<="]:
-            raise ValueError(f"Unrecognized bound operation{opstr} in PCTL {prop_str}")
-        value_str = prop_str[prop_str.find(opstr) + len(opstr) :]
-        value = float(value_str)
-        return opstr, value
-
-    def _replace_bounded_op_str(self, prop_str: str, value: float):
-        prop_str_tokens = prop_str.split(" ")
-        prop_str_tokens[0] = f"P=?{value}"
-        return " ".join(prop_str_tokens)
 
     def check_bounded(self, particle: np.array):
         model_parameters = self.model.collect_probability_parameters()

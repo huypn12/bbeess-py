@@ -9,10 +9,10 @@ from scripts.mc.smc_rf_uniform_kernel import SmcRfUniformKernel
 class TestSmcRfUniformKernel(unittest.TestCase):
     def setUp(self):
         self.prism_model_file = (
-            "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_310.pm"
+            "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_3_1_0.pm"
         )
         self.prism_props_file = (
-            "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_310.pctl"
+            "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_3_1_0.pctl"
         )
         self.model = SimpleRfModel(
             self.prism_model_file,
@@ -22,9 +22,9 @@ class TestSmcRfUniformKernel(unittest.TestCase):
             model=self.model,
             interval=[0, 0.01],
             particle_dim=2,
-            particle_trace_len=100,
+            particle_trace_len=10,
             kernel_count=50,
-            observed_data=[51, 20, 17, 12],
+            observed_data=[28, 12, 17, 43],
         )
 
     def test_exec(self):
