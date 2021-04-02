@@ -17,7 +17,7 @@ class TestSmcSimUniformKernel(unittest.TestCase):
         self.model = SimpleSimModel(
             self.prism_model_file,
             self.prism_props_file,
-            obs_labels=["bscc_300", "bscc_202", "bscc_103", "bscc_013"],
+            obs_labels=["bscc_0_0_4", "bscc_1_0_3", "bscc_2_0_2", "bscc_3_0_1"],
         )
         self.mc = AbcSmcSmcUniformKernel(
             model=self.model,
@@ -25,8 +25,8 @@ class TestSmcSimUniformKernel(unittest.TestCase):
             particle_dim=2,
             particle_trace_len=10,
             kernel_count=10,
-            abc_threshold=0.1,
-            observed_data=[51, 20, 17, 12],
+            abc_threshold=0.4,
+            observed_data=[28, 12, 17, 43],
         )
 
     def test_exec(self):

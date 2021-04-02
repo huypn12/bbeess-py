@@ -42,7 +42,15 @@ class SimpleSimModel(AbstractSimulationModel):
         lines: List[str] = []
         with open(self.prism_props_file, "r") as fptr:
             lines = fptr.readlines()
-        props_str = ";".join(lines)
+        self.prism_props_str = lines
+        opstr, bound_value = self._extract_bounded_op_str(self.prism_props_str[0])
+        self.check_prop_bounded_opstr = opstr
+        self.check_prop_bounded_value = bound_value
+        self.check_prop_unbounded_str = self._replace_bounded_op_str(
+            self.prism_props_str[0]
+        )
+        self.prism_props_str.insert(1, self.check_prop_unbounded_str)
+        props_str = ";".join(self.prism_props_str)
         self.prism_props = stormpy.parse_properties_for_prism_program(
             props_str, self.prism_program
         )
@@ -55,12 +63,6 @@ class SimpleSimModel(AbstractSimulationModel):
         )
         # Property for checking
         self.check_prop_bounded = self.prism_props[0]
-        opstr, bound_value = self._extract_bounded_op_str(self.prism_props_str[0])
-        self.check_prop_bounded_opstr = opstr
-        self.check_prop_bounded_value = bound_value
-        self.check_prop_unbounded = self._replace_bounded_op_str(
-            self.check_props_str[0], bound_value
-        )
         self.check_prop_unbounded = self.prism_props[1]
         # Properties for observing
         self.obs_props = self.prism_props[2:]
@@ -78,9 +80,9 @@ class SimpleSimModel(AbstractSimulationModel):
         value = float(value_str)
         return opstr, value
 
-    def _replace_bounded_op_str(self, prop_str: str, value: float):
+    def _replace_bounded_op_str(self, prop_str: str):
         prop_str_tokens = prop_str.split(" ")
-        prop_str_tokens[0] = f"P=?{value}"
+        prop_str_tokens[0] = "P=?"
         return " ".join(prop_str_tokens)
 
     def _load(self):

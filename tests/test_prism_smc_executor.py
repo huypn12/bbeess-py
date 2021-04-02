@@ -6,10 +6,10 @@ from scripts.prism.prism_smc_executor import PrismSmcSprtExecutor
 class TestPrismSmcSprtExecutor(unittest.TestCase):
     def setUp(self) -> None:
         self.prism_model_file = (
-            "/home/huypn12/Works/mcss/bbeess-py/experiments/data/sir_310.pm"
+            "/home/huypn12/Works/mcss/bbeess-py/experiments/data/sir_3_1_0.pm"
         )
         self.prism_props_file = (
-            "/home/huypn12/Works/mcss/bbeess-py/experiments/data/sir_310.pctl"
+            "/home/huypn12/Works/mcss/bbeess-py/experiments/data/sir_3_1_0.pctl"
         )
         self.prism_sprt_executor = PrismSmcSprtExecutor(
             prism_model_file=self.prism_model_file,

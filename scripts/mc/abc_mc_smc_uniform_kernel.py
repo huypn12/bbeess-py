@@ -77,6 +77,7 @@ class AbcMcSmcUniformKernel(object):
                 y_sim = self.model.simulate(
                     candidate_particle, 100 * len(self.observed_data)
                 )
+                print(y_sim)
                 distance = self.model.estimate_distance(
                     self._to_stats_summary(y_sim),
                     self._to_stats_summary(self.observed_data),
