@@ -2,11 +2,12 @@ dtmc
   const double alpha;
   const double beta;
 
-module sir_20_1_0
+module sir_20_1_0 
+	s : [0..21] init 20;
+	i : [0..21] init 1;
+	r : [0..21] init 0;
  
-	s : [0..20] init 20;
-	i : [0..20] init 1;
-	r : [0..20] init 0; [] s=20 & i=1 & r=0 -> ((20*alpha)/(20*alpha+21*beta)):(s'=19) & (i'=2) & (r'=0) + ((1*beta)/(20*alpha+21*beta)):(s'=20) & (i'=0) & (r'=1) + ((20*beta)/(20*alpha+21*beta)):(s'=20) & (i'=1) & (r'=0);
+	[] s=20 & i=1 & r=0 -> ((20*alpha)/(20*alpha+21*beta)):(s'=19) & (i'=2) & (r'=0) + ((1*beta)/(20*alpha+21*beta)):(s'=20) & (i'=0) & (r'=1) + ((20*beta)/(20*alpha+21*beta)):(s'=20) & (i'=1) & (r'=0);
 	[] s=19 & i=2 & r=0 -> ((19*alpha)/(20*alpha+21*beta)):(s'=18) & (i'=3) & (r'=0) + ((2*beta)/(20*alpha+21*beta)):(s'=19) & (i'=1) & (r'=1) + ((1*alpha+19*beta)/(20*alpha+21*beta)):(s'=19) & (i'=2) & (r'=0);
 	[] s=18 & i=3 & r=0 -> ((18*alpha)/(20*alpha+21*beta)):(s'=17) & (i'=4) & (r'=0) + ((3*beta)/(20*alpha+21*beta)):(s'=18) & (i'=2) & (r'=1) + ((2*alpha+18*beta)/(20*alpha+21*beta)):(s'=18) & (i'=3) & (r'=0);
 	[] s=17 & i=4 & r=0 -> ((17*alpha)/(20*alpha+21*beta)):(s'=16) & (i'=5) & (r'=0) + ((4*beta)/(20*alpha+21*beta)):(s'=17) & (i'=3) & (r'=1) + ((3*alpha+17*beta)/(20*alpha+21*beta)):(s'=17) & (i'=4) & (r'=0);
@@ -259,6 +260,7 @@ module sir_20_1_0
 	[] s=19 & i=0 & r=2 -> (s'=19) & (i'=0) & (r'=2);
 	[] s=20 & i=0 & r=1 -> (s'=20) & (i'=0) & (r'=1); 
 endmodule
+
 label "bscc_0_0_21" = s=0 & i=0 & r=21 ;
 label "bscc_1_0_20" = s=1 & i=0 & r=20 ;
 label "bscc_2_0_19" = s=2 & i=0 & r=19 ;
@@ -280,5 +282,6 @@ label "bscc_17_0_4" = s=17 & i=0 & r=4 ;
 label "bscc_18_0_3" = s=18 & i=0 & r=3 ;
 label "bscc_19_0_2" = s=19 & i=0 & r=2 ;
 label "bscc_20_0_1" = s=20 & i=0 & r=1 ;
+
 // Number of states: 252
 // Number of BSCCs: 21
