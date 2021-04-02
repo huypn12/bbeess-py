@@ -2,11 +2,12 @@ dtmc
   const double alpha;
   const double beta;
 
-module sir_15_1_0
+module sir_15_1_0 
+	s : [0..16] init 15;
+	i : [0..16] init 1;
+	r : [0..16] init 0;
  
-	s : [0..15] init 15;
-	i : [0..15] init 1;
-	r : [0..15] init 0; [] s=15 & i=1 & r=0 -> ((15*alpha)/(15*alpha+16*beta)):(s'=14) & (i'=2) & (r'=0) + ((1*beta)/(15*alpha+16*beta)):(s'=15) & (i'=0) & (r'=1) + ((15*beta)/(15*alpha+16*beta)):(s'=15) & (i'=1) & (r'=0);
+	[] s=15 & i=1 & r=0 -> ((15*alpha)/(15*alpha+16*beta)):(s'=14) & (i'=2) & (r'=0) + ((1*beta)/(15*alpha+16*beta)):(s'=15) & (i'=0) & (r'=1) + ((15*beta)/(15*alpha+16*beta)):(s'=15) & (i'=1) & (r'=0);
 	[] s=14 & i=2 & r=0 -> ((14*alpha)/(15*alpha+16*beta)):(s'=13) & (i'=3) & (r'=0) + ((2*beta)/(15*alpha+16*beta)):(s'=14) & (i'=1) & (r'=1) + ((1*alpha+14*beta)/(15*alpha+16*beta)):(s'=14) & (i'=2) & (r'=0);
 	[] s=13 & i=3 & r=0 -> ((13*alpha)/(15*alpha+16*beta)):(s'=12) & (i'=4) & (r'=0) + ((3*beta)/(15*alpha+16*beta)):(s'=13) & (i'=2) & (r'=1) + ((2*alpha+13*beta)/(15*alpha+16*beta)):(s'=13) & (i'=3) & (r'=0);
 	[] s=12 & i=4 & r=0 -> ((12*alpha)/(15*alpha+16*beta)):(s'=11) & (i'=5) & (r'=0) + ((4*beta)/(15*alpha+16*beta)):(s'=12) & (i'=3) & (r'=1) + ((3*alpha+12*beta)/(15*alpha+16*beta)):(s'=12) & (i'=4) & (r'=0);
@@ -159,6 +160,7 @@ module sir_15_1_0
 	[] s=14 & i=0 & r=2 -> (s'=14) & (i'=0) & (r'=2);
 	[] s=15 & i=0 & r=1 -> (s'=15) & (i'=0) & (r'=1); 
 endmodule
+
 label "bscc_0_0_16" = s=0 & i=0 & r=16 ;
 label "bscc_1_0_15" = s=1 & i=0 & r=15 ;
 label "bscc_2_0_14" = s=2 & i=0 & r=14 ;
@@ -175,5 +177,6 @@ label "bscc_12_0_4" = s=12 & i=0 & r=4 ;
 label "bscc_13_0_3" = s=13 & i=0 & r=3 ;
 label "bscc_14_0_2" = s=14 & i=0 & r=2 ;
 label "bscc_15_0_1" = s=15 & i=0 & r=1 ;
+
 // Number of states: 152
 // Number of BSCCs: 16

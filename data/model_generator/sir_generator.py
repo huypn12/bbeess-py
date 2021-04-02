@@ -24,6 +24,7 @@ class SirGenerator(object):
         self.s0 = s0
         self.i0 = i0
         self.r0 = r0
+        self.population = s0 + i0 + r0
         self.param_label_a = "alpha"
         self.param_label_b = "beta"
         self.model_id = f"sir_{s0}_{i0}_{r0}"
@@ -177,8 +178,10 @@ class SirGenerator(object):
                 + ";"
             )
         trans_str = "\n\t".join(trans_expr_lst)
-        var_str = f"\n\ts : [0..{self.s0}] init {self.s0};\n\ti : [0..{self.s0}] init {self.i0};\n\tr : [0..{self.s0}] init {self.r0};"
-        prog_body: str = f"module {self.model_id}\n {var_str} {trans_str} \nendmodule"
+        var_str = f"s : [0..{self.population}] init {self.s0};\n\ti : [0..{self.population}] init {self.i0};\n\tr : [0..{self.population}] init {self.r0};\n"
+        prog_body: str = (
+            f"module {self.model_id} \n\t{var_str} \n\t{trans_str} \nendmodule\n"
+        )
         prog_header: str = f"dtmc\n  const double {self.param_label_a};\n  const double {self.param_label_b};\n"
         prog_foot: str = "\n".join(
             [
@@ -186,6 +189,7 @@ class SirGenerator(object):
                 for bscc in self.bscc_nodes
             ]
         )
+        prog_foot += "\n"
         prog_foot += f"\n// Number of states: {len(self.node_list)}"
         prog_foot += f"\n// Number of BSCCs: {len(self.bscc_nodes)}"
         self.dtmc_prog = "\n".join([prog_header, prog_body, prog_foot])
@@ -197,7 +201,7 @@ class SirGenerator(object):
 
     def save(self, model_path: str, props_path: str):
         self._save_model(model_path)
-        self._save_props(props_path)
+        # self._save_props(props_path)
 
     def _save_model(self, model_path: str):
         with open(model_path, "w") as fptr:
