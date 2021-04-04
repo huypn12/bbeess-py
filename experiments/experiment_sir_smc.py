@@ -83,6 +83,7 @@ class ExperimentSirSmc(object):
             raise ValueError(f"Unsupported mode {self.mode}")
         is_sat = self.model.check_bounded(self.true_param)
         assert is_sat == True
+        logging.info(f"{str(datetime.now())} Mode {self.mode}")
         logging.info(f"{str(datetime.now())} PRISM model: {self.prism_model_file}")
         logging.info(f"{str(datetime.now())} PRISM props: {self.prism_props_file}")
         logging.info(f"{str(datetime.now())} True parameter (SAT): {self.true_param}")
@@ -118,8 +119,6 @@ def main(cfg_name: str, mode: EvaluationMode):
     true_param = cfg["true_param"]
     observed_data = cfg["observed_data"]
     observed_labels = cfg["observed_labels"]
-
-    print(prism_model_file)
     experiment = ExperimentSirSmc(
         mode=mode,
         smc_trace_len=smc_trace_len,
