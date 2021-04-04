@@ -21,6 +21,7 @@ class SmcRfUniformKernel(object):
         particle_dim: int,
         particle_trace_len: int,
         kernel_count: int,
+        mh_trace_len: int,
         observed_data: List[int],
     ) -> None:
         self.model = model
@@ -32,7 +33,7 @@ class SmcRfUniformKernel(object):
         )
         self.particle_weights: np.array = np.zeros(particle_trace_len, dtype=float)
         self.particle_llh: np.array = np.zeros(particle_trace_len, dtype=float)
-        self.particle_mh_trace_len: int = particle_trace_len
+        self.particle_mh_trace_len: int = mh_trace_len
         self.particle_mean: np.array = np.zeros(particle_dim, dtype=float)
         self.kernel_count: int = kernel_count
         self.kernel_params: np.array = np.zeros(

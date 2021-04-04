@@ -17,20 +17,6 @@ logging.basicConfig(
 )
 
 
-gConfig = {
-    "sir5_true_param": np.array([0.017246491978609703, 0.067786043574277]),
-    "sir5_observed_data": np.array([421, 834, 1126, 1362, 1851, 4406]),
-    "sir10_true_param": np.array([0.01099297054879006, 0.035355703902286616]),
-    "sir10_observed_data": np.array(
-        [563, 976, 1016, 909, 764, 696, 606, 565, 603, 855, 2447]
-    ),
-    "sir15_true_param": np.array([0.004132720013578173, 0.07217656035559976]),
-    "sir15_observed_data": np.array(
-        [0, 0, 0, 1, 4, 12, 29, 37, 96, 177, 283, 459, 619, 1078, 1845, 5360]
-    ),
-}
-
-
 class ExperimentSirSmcRf:
     def __init__(
         self,
@@ -73,16 +59,19 @@ class ExperimentSirSmcRf:
             kernel_count=20,
             observed_data=self.observed_data,
         )
-        end_time = datetime.now()
         self.mc.run()
         particle_mean, trace, weights = self.mc.get_result()
+        end_time = datetime.now()
         logging.info(f"{str(datetime.now())} Particle trace")
         logging.info(trace)
-        logging.info(f"{str(datetime.now())} Particle mean")
-        logging.info(particle_mean)
         logging.info(f"{str(datetime.now())} Particle weights")
         logging.info(weights)
-        logging.info(f"{str(datetime.now())} End experiments")
+        logging.info(
+            f"{str(datetime.now())} Particle mean, distance={np.linalg.norm(particle_mean - self.true_param)}"
+        )
+        logging.info(particle_mean)
+        logging.info(f"{str(datetime.now())} Time elapsed {end_time - start_time}")
+        logging.info(f"{str(datetime.now())} End experiments.")
 
 
 def do_experiment_sir5():
@@ -148,6 +137,7 @@ if __name__ == "__main__":
     m = sys.argv[1]
     if m == "5":
         do_experiment_sir5()
+
     elif m == "10":
         do_experiment_sir10()
     elif m == "15":

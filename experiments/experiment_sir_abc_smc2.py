@@ -57,14 +57,16 @@ class ExperimentSirAbcSmc2:
         )
         self.mc.run()
         end = timer()
-        logging.info(f"{str(datetime.now())} Time elapsed {end - start}")
         particle_mean, trace, weights = self.mc.get_result()
         logging.info(f"{str(datetime.now())} Particle trace")
         logging.info(trace)
-        logging.info(f"{str(datetime.now())} Particle mean")
-        logging.info(particle_mean)
         logging.info(f"{str(datetime.now())} Particle weights")
         logging.info(weights)
+        logging.info(
+            f"{str(datetime.now())} Particle mean, distance={np.linalg.norm(particle_mean - self.true_param)}"
+        )
+        logging.info(particle_mean)
+        logging.info(f"{str(datetime.now())} Time elapsed {end - start}")
         logging.info(f"{str(datetime.now())} End experiments")
 
 
