@@ -54,6 +54,45 @@ class FindTrueParams(object):
         self.search()
 
 
+def manual():
+    configs = [
+        (
+            "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_5_1_0_a.pm",
+            "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_5_1_0_a.pctl",
+            (0, 0.1),
+            10000,
+            np.array([0.03405521326944327, 0.08773454035144489]),
+        ),
+        (
+            "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_5_1_0_a.pm",
+            "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_5_1_0_a.pctl",
+            (0, 0.1),
+            200,
+            np.array([0.03405521326944327, 0.08773454035144489]),
+        ),
+        (
+            "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_10_1_0_a.pm",
+            "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_10_1_0_a.pctl",
+            (0, 0.1),
+            10000,
+            np.array([0.025490115891226895, 0.06929809986640066]),
+        ),
+        (
+            "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_10_1_0_a.pm",
+            "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_10_1_0_a.pctl",
+            (0, 0.1),
+            200,
+            np.array([0.025490115891226895, 0.06929809986640066]),
+        ),
+    ]
+    for cfg in configs:
+        prism_model_file, prism_props_file, interval, simulation_count, true_param = cfg
+        experiment = FindTrueParams(
+            prism_model_file, prism_props_file, interval, simulation_count
+        )
+        experiment.simulate(true_param)
+
+
 def main():
     configs = [
         (
@@ -69,22 +108,10 @@ def main():
             10000,
         ),
         (
-            "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_5_1_0_a.pm",
-            "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_5_1_0_a.pctl",
-            (0, 0.1),
-            200,
-        ),
-        (
             "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_10_1_0.pm",
             "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_10_1_0.pctl",
             (0, 0.1),
             10000,
-        ),
-        (
-            "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_10_1_0_a.pm",
-            "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_10_1_0_a.pctl",
-            (0, 0.1),
-            200,
         ),
         (
             "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_15_1_0.pm",
@@ -95,7 +122,7 @@ def main():
     ]
 
     for cfg in configs:
-        prism_model_file, prism_props_file, interval, simulation_count = cfg
+        prism_model_file, prism_props_file, interval, simulation_count, true_param = cfg
         experiment = FindTrueParams(
             prism_model_file, prism_props_file, interval, simulation_count
         )
@@ -103,4 +130,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # main()
+    manual()
