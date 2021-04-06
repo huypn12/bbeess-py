@@ -261,8 +261,9 @@ module sir_20_1_0
 	[] s=20 & i=0 & r=1 -> (s'=20) & (i'=0) & (r'=1); 
 endmodule
 
-label "bscc_k_0_gt11" = s<=10 & i=0 & r>=11 ;
-label "bscc_k_0_gt11" = s>10 & i=0 & r<11 ;
+
+label "bscc_k_0_gt11" = s<=9 & i=0 & r>11 ;
+label "bscc_k_0_leq11" = s> & i=0 & r<=11 ;
 
 
 // Number of states: 252
