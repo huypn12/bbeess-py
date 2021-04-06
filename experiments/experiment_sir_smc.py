@@ -81,8 +81,7 @@ class ExperimentSirSmc(object):
             )
         else:
             raise ValueError(f"Unsupported mode {self.mode}")
-        is_sat = self.model.check_bounded(self.true_param)
-        assert is_sat == True
+        self.model.check_bounded(self.true_param)
         logging.info(f"{str(datetime.now())} Mode {self.mode}")
         logging.info(f"{str(datetime.now())} PRISM model: {self.prism_model_file}")
         logging.info(f"{str(datetime.now())} PRISM props: {self.prism_props_file}")
