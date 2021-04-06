@@ -263,7 +263,7 @@ endmodule
 
 
 label "bscc_k_0_gt11" = s<=9 & i=0 & r>11 ;
-label "bscc_k_0_leq11" = s> & i=0 & r<=11 ;
+label "bscc_k_0_leq11" = s>9 & i=0 & r<=11 ;
 
 
 // Number of states: 252
