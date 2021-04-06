@@ -34,7 +34,7 @@ class ExperimentConfig(object):
                 "bscc_5_0_1",
             ],
         },
-        "sir_5_1_0a": {
+        "sir_5_1_0_a": {
             "smc_trace_len": 200,
             "smc_pertubation_len": 20,
             "smc_mh_trace_len": 50,
@@ -46,7 +46,7 @@ class ExperimentConfig(object):
             "observed_data": np.array([3964, 6036]),
             "observed_labels": ["bscc_k_0_geq4", "bscc_k_0_leq3"],
         },
-        "sir_5_1_0a_few": {
+        "sir_5_1_0_a_few": {
             "smc_trace_len": 200,
             "smc_pertubation_len": 20,
             "smc_mh_trace_len": 50,
@@ -84,7 +84,7 @@ class ExperimentConfig(object):
                 "bscc_10_0_1",
             ],
         },
-        "sir_10_1_a": {
+        "sir_10_1_0_a": {
             "smc_trace_len": 200,
             "smc_pertubation_len": 20,
             "smc_mh_trace_len": 50,
@@ -96,7 +96,7 @@ class ExperimentConfig(object):
             "observed_data": np.array([9607, 393]),
             "observed_labels": ["bscc_k_0_gt6", "bscc_k_0_leq6"],
         },
-        "sir_10_1_a_few": {
+        "sir_10_1_0_a_few": {
             "smc_trace_len": 200,
             "smc_pertubation_len": 20,
             "smc_mh_trace_len": 50,
@@ -105,7 +105,7 @@ class ExperimentConfig(object):
             "prism_props_file": "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_10_1_0_a.pctl",
             "interval": (0, 0.1),
             "true_param": np.array([0.025490115891226895, 0.06929809986640066]),
-            "observed_data": np.array([9607, 393]),
+            "observed_data": np.array([87, 113]),
             "observed_labels": ["bscc_k_0_gt6", "bscc_k_0_leq6"],
         },
         "sir_15_1_0": {
@@ -155,6 +155,30 @@ class ExperimentConfig(object):
                 "bscc_14_0_2",
                 "bscc_15_0_1",
             ],
+        },
+        "sir_15_1_0_a": {
+            "smc_trace_len": 200,
+            "smc_pertubation_len": 20,
+            "smc_mh_trace_len": 50,
+            "abc_threshold": 0.25,
+            "prism_model_file": "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_15_1_0_a.pm",
+            "prism_props_file": "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_15_1_0_a.pctl",
+            "interval": (0, 0.1),
+            "true_param": np.array([0.011499276183591657, 0.06211051606863456]),
+            "observed_data": np.array([3227, 6773]),
+            "observed_labels": ["bscc_k_0_gt8", "bscc_k_0_leq8"],
+        },
+        "sir_15_1_0_a_few": {
+            "smc_trace_len": 200,
+            "smc_pertubation_len": 20,
+            "smc_mh_trace_len": 50,
+            "abc_threshold": 0.25,
+            "prism_model_file": "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_15_1_0_a.pm",
+            "prism_props_file": "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_15_1_0_a.pctl",
+            "interval": (0, 0.1),
+            "true_param": np.array([0.011499276183591657, 0.06211051606863456]),
+            "observed_data": np.array([54, 146]),
+            "observed_labels": ["bscc_k_0_gt8", "bscc_k_0_leq8"],
         },
     }
 

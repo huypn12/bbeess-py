@@ -34,8 +34,7 @@ class ExperimentSirAbcSmc2:
         self.true_param = true_param
         self.observed_data = observed_data
         logging.info(f"{str(datetime.now())} Start experiments")
-        result = self.model.check_bounded(self.true_param)
-        assert result == True
+        self.model.check_bounded(self.true_param)
         logging.info(f"{str(datetime.now())} True parameter (SAT): {self.true_param}")
         logging.info(f"{str(datetime.now())} Synthetic data: {self.observed_data}")
 
