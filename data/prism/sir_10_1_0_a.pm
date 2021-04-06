@@ -87,6 +87,6 @@ module sir_10_1_0
 endmodule
 
 // r > 6
-label "bscc_k_0_gt6" = s=0 & i=0 & r=11 | s=1 & i=0 & r=10 | s=2 & i=0 & r=9 | s=3 & i=0 & r=8 | s=4 & i=0 & r=7 ;
+label "bscc_k_0_gt6" = s<=4 & i=0 & r>6 ;
 // r <= 6
-label "bscc_k_0_leq6"  = s=5 & i=0 & r=6 | s=6 & i=0 & r=5 | s=7 & i=0 & r=4 | s=8 & i=0 & r=3 | s=9 & i=0 & r=2 | s=10 & i=0 & r=1 ;
+label "bscc_k_0_leq6 = s>4 & i=0 & r<=6 ;

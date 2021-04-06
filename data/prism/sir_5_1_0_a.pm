@@ -36,8 +36,11 @@ module sir_5_1_0
 	[] s=5 & i=0 & r=1 -> (s'=5) & (i'=0) & (r'=1); 
 endmodule
 
-label "bscc_k_0_geq4" = s=0 & i=0 & r=6 | s=1 & i=0 & r=5 | s=2 & i=0 & r=4 ;
-label "bscc_k_0_leq3" = s=3 & i=0 & r=3 | s=4 & i=0 & r=2 | s=5 & i=0 & r=1 ;
+// label "bscc_k_0_geq4" = s=0 & i=0 & r=6 | s=1 & i=0 & r=5 | s=2 & i=0 & r=4 ;
+// label "bscc_k_0_leq3" = s=3 & i=0 & r=3 | s=4 & i=0 & r=2 | s=5 & i=0 & r=1 ;
+
+label "bscc_k_0_geq4" = s<=2 & i=0 & r>=4;
+label "bscc_k_0_leq3" = s>=3 & i=0 & r<=3;
 
 // Number of states: 27
 // Number of BSCCs:  2
