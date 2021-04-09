@@ -110,9 +110,9 @@ class SimpleRfModel(AbstractRationalModel):
         elif op == "<=":
             return result <= self.check_prop_bounded_value
         elif op == ">":
-            return result <= self.check_prop_bounded_value
+            return result > self.check_prop_bounded_value
         elif op == "<":
-            return result <= self.check_prop_bounded_value
+            return result < self.check_prop_bounded_value
         else:
             raise ValueError(
                 f"Unable to compare boundary op={op} result={result} bound_value={self.check_prop_bounded_value}"

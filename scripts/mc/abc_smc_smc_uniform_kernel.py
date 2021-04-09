@@ -80,6 +80,10 @@ class AbcSmcSmcUniformKernel(object):
             )
         return self._average(self.particle_weights)
 
+    def _inverse_weight(self):
+        for i in range(0, len(self.particle_weights)):
+            self.particle_weights[i] = 1 / self.particle_weights[i]
+
     def _next_particle(self, sigma: Optional[np.array]) -> np.array:
         assert len(sigma) == self.particle_dim
         particle = np.zeros(self.particle_dim)
@@ -155,6 +159,7 @@ class AbcSmcSmcUniformKernel(object):
                 f"{str(datetime.now())} Finish kernel {t} threshold={self.abc_threshold}"
             )
         self._estimate_point()
+        self._inverse_weight()
 
     def _average(self, cat: np.array) -> np.array:
         return cat / np.sum(cat)
