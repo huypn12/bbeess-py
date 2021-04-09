@@ -56,34 +56,34 @@ class FindTrueParams(object):
 
 def manual():
     configs = [
-        # (
-        #     "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_5_1_0_a.pm",
-        #     "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_5_1_0_a.pctl",
-        #     (0, 0.1),
-        #     10000,
-        #     np.array([0.03405521326944327, 0.08773454035144489]),
-        # ),
-        # (
-        #     "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_5_1_0_a.pm",
-        #     "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_5_1_0_a.pctl",
-        #     (0, 0.1),
-        #     200,
-        #     np.array([0.03405521326944327, 0.08773454035144489]),
-        # ),
-        # (
-        #     "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_10_1_0_a.pm",
-        #     "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_10_1_0_a.pctl",
-        #     (0, 0.1),
-        #     10000,
-        #     np.array([0.025490115891226895, 0.06929809986640066]),
-        # ),
-        # (
-        #     "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_10_1_0_a.pm",
-        #     "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_10_1_0_a.pctl",
-        #     (0, 0.1),
-        #     200,
-        #     np.array([0.025490115891226895, 0.06929809986640066]),
-        # ),
+        (
+            "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_5_1_0_a.pm",
+            "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_5_1_0_a.pctl",
+            (0, 0.1),
+            10000,
+            np.array([0.03405521326944327, 0.08773454035144489]),
+        ),
+        (
+            "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_5_1_0_a.pm",
+            "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_5_1_0_a.pctl",
+            (0, 0.1),
+            200,
+            np.array([0.03405521326944327, 0.08773454035144489]),
+        ),
+        (
+            "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_10_1_0_a.pm",
+            "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_10_1_0_a.pctl",
+            (0, 0.1),
+            10000,
+            np.array([0.025490115891226895, 0.06929809986640066]),
+        ),
+        (
+            "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_10_1_0_a.pm",
+            "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_10_1_0_a.pctl",
+            (0, 0.1),
+            200,
+            np.array([0.025490115891226895, 0.06929809986640066]),
+        ),
         (
             "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_15_1_0_a.pm",
             "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_15_1_0_a.pctl",
