@@ -75,39 +75,83 @@ def visualize_dist(plot_name, truep, estp, x, y, t):
     plt.savefig(plot_name)
 
 
-def visualize_sir510():
+def visualize_sir1510():
     visualize_data(
         "sir510_data",
-        str2array("[ 421  834 1126 1362 1851 4406]"),
+        str2array(
+            "[  50  181  302  455  539  567  582  566  541  553  574  528  512  586 875 2589]"
+        ),
         [
-            "(0,0,6)",
-            "(1,0,5)",
-            "(2,0,4)",
-            "(3,0,3)",
-            "(4,0,2)",
-            "(5,0,1)",
+            "bscc_0_0_16",
+            "bscc_1_0_15",
+            "bscc_2_0_14",
+            "bscc_3_0_13",
+            "bscc_4_0_12",
+            "bscc_5_0_11",
+            "bscc_6_0_10",
+            "bscc_7_0_9",
+            "bscc_8_0_8",
+            "bscc_9_0_7",
+            "bscc_10_0_6",
+            "bscc_11_0_5",
+            "bscc_12_0_4",
+            "bscc_13_0_3",
+            "bscc_14_0_2",
+            "bscc_15_0_1",
         ],
     )
+    visualize_data(
+        "sir510_data_merged",
+        str2array("[ 54 146]"),
+        ["(*,0,r>8)", "(*,0,r<=8)"],
+    )
 
-    true_p = str2array(sir_trace.sir510_true_p)
-    particles = str2array(sir_trace.sir510_rf_particles)
+    # No BSCC merging, rf
+    true_p = str2array("[0.01149928 0.06211052]")
+    particles = str2array(sir_trace.gSirRfPtrace["15_1_0"])
     alpha = [p[0] for p in particles]
     beta = [p[1] for p in particles]
-    llh = str2array(sir_trace.sir510_rf_particles_weight)
-    estp = str2array(sir_trace.sir510_rf_particles_mean)
-    visualize_llh("sir510_rfsmc", true_p, estp, alpha, beta, llh)
+    llh = str2array(sir_trace.gSirRfPweight["15_1_0"])
+    est_p = str2array(sir_trace.gSirRfPmean["15_1_0"])
+    visualize_llh("sir1510_rfsmc", true_p, est_p, alpha, beta, llh)
 
-    particles = str2array(sir_trace.sir510_smc_particles)
+    # No BSCC merging, sim
+    particles = str2array(sir_trace.gSirSimPtrace["15_1_0"])
     alpha = [p[0] for p in particles]
     beta = [p[1] for p in particles]
-    llh = str2array(sir_trace.sir510_smc_particles_weight)
-    llh = llh / np.sum(llh)
-    estp = str2array(sir_trace.sir510_smc_particles_mean)
-    visualize_dist("sir510_abcsmc", true_p, estp, alpha, beta, llh)
+    llh = str2array(sir_trace.gSirSimPweight["15_1_0"])
+    llh = 1 / llh
+    est_p = str2array(sir_trace.gSirRfPmean["15_1_0"])
+    visualize_dist("sir1510_abcsmc", true_p, est_p, alpha, beta, llh)
+
+    # BSCC merging, rf
+    particles = str2array(sir_trace.gSirRfPtrace["15_1_0_a_few"])
+    alpha = [p[0] for p in particles]
+    beta = [p[1] for p in particles]
+    llh = str2array(sir_trace.gSirRfPweight["15_1_0_a_few"])
+    est_p = str2array(sir_trace.gSirRfPmean["15_1_0_a_few"])
+    visualize_llh("sir1510_rfsmc_few", true_p, est_p, alpha, beta, llh)
+
+    # BSCC merging, sim
+    particles = str2array(sir_trace.gSirSimPtrace["15_1_0_a_few"])
+    alpha = [p[0] for p in particles]
+    beta = [p[1] for p in particles]
+    llh = str2array(sir_trace.gSirSimPweight["15_1_0_a_few"])
+    llh = 1 / llh
+    est_p = str2array(sir_trace.gSirSimPmean["15_1_0_a_few"])
+    visualize_dist("sir1510_abcsmc_few", true_p, est_p, alpha, beta, llh)
+
+
+def visualize_510():
+    pass
+
+
+def visualize_1010():
+    pass
 
 
 def main():
-    visualize_sir510()
+    visualize_sir1510()
 
 
 if __name__ == "__main__":
