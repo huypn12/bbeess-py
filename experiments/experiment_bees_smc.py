@@ -10,10 +10,9 @@ import sys
 import logging
 
 logging.basicConfig(
-    filename=f"experiment_sir_abc_smc2_{str(datetime.now())}.log",
+    filename=f"experiment_bee_smc_{str(datetime.now())}.log",
     level=logging.DEBUG,
 )
-
 
 class ExperimentBeesSmc(object):
     def __init__(self) -> None:
