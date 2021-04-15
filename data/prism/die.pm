@@ -2,6 +2,7 @@
 dtmc
 
 const double p;
+const double q;
 
 module die
 
