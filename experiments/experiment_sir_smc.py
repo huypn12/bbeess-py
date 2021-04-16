@@ -1,4 +1,4 @@
-from experiments.experiment_config import ExperimentConfig
+from experiments.experiment_sir_config import ExperimentSirConfig
 from scripts.model.simple_prism_rf_model import SimpleRfModel
 from scripts.mc.smc_rf_uniform_kernel import SmcRfUniformKernel
 from scripts.model.simple_prism_sim_model import SimpleSimModel
@@ -107,7 +107,7 @@ class ExperimentSirSmc(object):
 
 
 def main(cfg_name: str, mode: EvaluationMode):
-    cfg = ExperimentConfig.get_config(cfg_name)
+    cfg = ExperimentSirConfig.get_config(cfg_name)
     smc_trace_len = cfg["smc_trace_len"]
     smc_pertubation_len = cfg["smc_pertubation_len"]
     smc_mh_trace_len = cfg["smc_mh_trace_len"]
@@ -136,7 +136,7 @@ def main(cfg_name: str, mode: EvaluationMode):
 
 if __name__ == "__main__":
     print("Supported config entries: ")
-    for cfg in ExperimentConfig.get_all_config_names():
+    for cfg in ExperimentSirConfig.get_all_config_names():
         print(cfg)
 
     if len(sys.argv) != 3:
