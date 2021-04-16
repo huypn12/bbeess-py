@@ -7,10 +7,8 @@ logging.basicConfig(
     filename=f"temp-files/log/find_true_params_{str(datetime.now())}.log",
     level=logging.DEBUG,
 )
-
 import numpy as np
 
-from scripts.model.simple_prism_sim_model import SimpleSimModel
 from scripts.model.simple_prism_rf_model import SimpleRfModel
 
 
@@ -36,14 +34,12 @@ class FindTrueParams(object):
     def search(self):
         i: int = 0
         while i < 10:
-            alpha = np.random.uniform(*self.interval)
-            beta = np.random.uniform(*self.interval)
-            sat = self.model.check_bounded(np.array([alpha, beta]))
+            p = np.random.uniform(*self.interval)
+            q = np.random.uniform(*self.interval)
+            sat = self.model.check_bounded(np.array([p, q]))
             if sat:
-                logging.info(
-                    f"{str(datetime.now())} True parameter (SAT): {[alpha, beta]}"
-                )
-                self.simulate(np.array([alpha, beta]))
+                logging.info(f"{str(datetime.now())} True parameter (SAT): {[p, q]}")
+                self.simulate(np.array([p, q]))
                 i += 1
 
     def simulate(self, p: np.array):
@@ -59,13 +55,13 @@ def main():
         (
             "/home/huypn12/Works/mcss/bbeess-py/data/prism/zeroconf_4.pm",
             "/home/huypn12/Works/mcss/bbeess-py/data/prism/zeroconf_4.pctl",
-            (0, 0.1),
+            (0, 1),
             10000,
         ),
         (
             "/home/huypn12/Works/mcss/bbeess-py/data/prism/zeroconf_10.pm",
             "/home/huypn12/Works/mcss/bbeess-py/data/prism/zeroconf_10.pctl",
-            (0, 0.1),
+            (0, 1),
             10000,
         ),
     ]

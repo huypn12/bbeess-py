@@ -1,7 +1,9 @@
 import numpy as np
 
+from experiments.experiment_config import ExperimentConfig
 
-class ExperimentConfig(object):
+
+class ExperimentSirConfig(ExperimentConfig):
     _config = {
         "sir_3_1_0": {
             "smc_trace_len": 10,
@@ -183,11 +185,5 @@ class ExperimentConfig(object):
     }
 
     @staticmethod
-    def get_config(model_name: str):
-        if model_name not in ExperimentConfig._config:
-            raise ValueError(f"Configuration not found for entry {model_name}")
-        return ExperimentConfig._config[model_name]
-
-    @staticmethod
-    def get_all_config_names():
-        return list(ExperimentConfig._config.keys())
+    def _get_config():
+        return ExperimentSirConfig._config
