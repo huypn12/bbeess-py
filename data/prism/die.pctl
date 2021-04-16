@@ -1,4 +1,4 @@
-P=? [ true U<=3 "one" ]
+P>=0.17 [ true U "one" ]
 P=? [ F "one" ]
 P=? [ F "two" ]
 P=? [ F "three" ]

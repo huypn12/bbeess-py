@@ -7,7 +7,6 @@ module zeroconf4
 	// local state
 	s : [0..8] init 0;
 
-	
 	[] s=0 -> q : (s'=1) + (1-q) : (s'=7);
 	[] s=1 -> p : (s'=2) + (1-p) : (s'=0);
 	[] s=2 -> p : (s'=3) + (1-p) : (s'=0);
@@ -20,5 +19,5 @@ module zeroconf4
 	
 endmodule
 
-label "ok" = s=8;
 label "err" = s=6;
+label "ok" = s=8;
