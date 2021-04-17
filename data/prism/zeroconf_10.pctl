@@ -1,3 +1,3 @@
-P>=0.75 [ true U<=15 "ok" ]
+P>=0.75 [ true U<=10 "ok" ]
 P=? [ F "err" ]
 P=? [ F "ok"  ]
