@@ -11,6 +11,7 @@ import numpy as np
 import scipy as sp
 
 from scripts.model.abstract_model import AbstractSimulationModel
+import scripts.config as gCfg
 
 
 class AbcSmcSmcUniformKernel(object):
@@ -39,13 +40,16 @@ class AbcSmcSmcUniformKernel(object):
         )
         self.abc_threshold: float = abc_threshold
         self.observed_data = observed_data
+        self.simulations_per_bscc = gCfg.per_bscc_sampling()
 
     def _init(self):
         sigma = self._get_sigma()
         self.kernel_params[0] = sigma
         for idx in range(0, self.particle_trace_len):
             particle = self._next_particle(sigma)
-            y_sim = self.model.simulate(particle, 1000 * len(self.observed_data))
+            y_sim = self.model.simulate(
+                particle, self.simulations_per_bscc * len(self.observed_data)
+            )
             distance = self.model.estimate_distance(
                 self._average(y_sim),
                 self._average(self.observed_data),
@@ -90,6 +94,8 @@ class AbcSmcSmcUniformKernel(object):
         for i in range(0, self.particle_dim):
             interval = self._get_interval(sigma[i])
             particle[i] = np.random.uniform(*interval)
+        if gCfg.is_bee_model():
+            particle = np.sort(particle)
         return particle
 
     def _correct(self, kernel_idx: int):
@@ -124,7 +130,8 @@ class AbcSmcSmcUniformKernel(object):
                 if not candidate_sat:
                     continue
                 y_sim = self.model.simulate(
-                    candidate_particle, 1000 * len(self.observed_data)
+                    candidate_particle,
+                    self.simulations_per_bscc * len(self.observed_data),
                 )
                 candidate_distance = self.model.estimate_distance(
                     self._average(y_sim),
