@@ -11,6 +11,7 @@ import numpy as np
 import scipy as sp
 
 from scripts.model.abstract_model import AbstractRationalModel
+import scripts.config as gCfg
 
 
 class SmcRfUniformKernel(object):
@@ -83,6 +84,8 @@ class SmcRfUniformKernel(object):
         for i in range(0, self.particle_dim):
             interval = self._get_interval(sigma[i])
             particle[i] = np.random.uniform(*interval)
+        if gCfg.is_bee_model():
+            particle = np.sort(particle)
         return particle
 
     def _correct(self, kernel_idx: int):
@@ -168,6 +171,8 @@ class SmcRfUniformKernel(object):
         for i in range(0, self.particle_dim):
             interval = self._get_interval(sigma)
             particle[i] = np.random.uniform(*interval)
+        if gCfg.is_bee_model():
+            particle = np.sort(particle)
         return particle
 
     def _mh_transition(
