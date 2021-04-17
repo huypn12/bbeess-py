@@ -71,7 +71,22 @@ def main():
         experiment.exec()
 
 
+def manual():
+    cfg = (
+        "/home/huypn12/Works/mcss/bbeess-py/data/prism/die.pm",
+        "/home/huypn12/Works/mcss/bbeess-py/data/prism/die.pctl",
+        (0, 1),
+        10000,
+    )
+    prism_model_file, prism_props_file, interval, simulation_count = cfg
+    experiment = FindTrueParams(
+        prism_model_file, prism_props_file, interval, simulation_count
+    )
+    for rf in experiment.model.obs_rf:
+        logging.info(rf)
+
+
 if __name__ == "__main__":
-    main()
-    # manual()
+    # main()
+    manual()
     logging.shutdown()

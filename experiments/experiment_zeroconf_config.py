@@ -29,6 +29,18 @@ class ExperimentZeroconfConfig(ExperimentConfig):
             "observed_data": np.array([524, 9476]),
             "observed_labels": ["err", "ok"],
         },
+        "zeroconf_10_a": {
+            "smc_trace_len": 200,
+            "smc_pertubation_len": 20,
+            "smc_mh_trace_len": 50,
+            "abc_threshold": 0.25,
+            "prism_model_file": "/home/huypn12/Works/mcss/bbeess-py/data/prism/zeroconf_10.pm",
+            "prism_props_file": "/home/huypn12/Works/mcss/bbeess-py/data/prism/zeroconf_10.pctl",
+            "interval": (0, 1),
+            "true_param": np.array([0.19777902317319973, 0.6218243349185975]),
+            "observed_data": np.array([22, 9978]),
+            "observed_labels": ["err", "ok"],
+        },
     }
 
     @staticmethod

@@ -22,7 +22,7 @@ class EvaluationMode(IntEnum):
     Simulation = 2
 
 
-class ExperimentSirSmc(object):
+class ExperimentZeroconfSmc(object):
     def __init__(
         self,
         mode: EvaluationMode,
@@ -118,7 +118,7 @@ def main(cfg_name: str, mode: EvaluationMode):
     true_param = cfg["true_param"]
     observed_data = cfg["observed_data"]
     observed_labels = cfg["observed_labels"]
-    experiment = ExperimentSirSmc(
+    experiment = ExperimentZeroconfSmc(
         mode=mode,
         smc_trace_len=smc_trace_len,
         smc_pertubation_len=smc_pertubation_len,

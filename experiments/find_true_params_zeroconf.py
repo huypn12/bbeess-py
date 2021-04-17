@@ -4,7 +4,7 @@ from timeit import default_timer as timer
 from typing import List, Tuple
 
 logging.basicConfig(
-    filename=f"temp-files/log/find_true_params_{str(datetime.now())}.log",
+    filename=f"temp-files/log/zeroconf_true_params_{str(datetime.now())}.log",
     level=logging.DEBUG,
 )
 import numpy as np
