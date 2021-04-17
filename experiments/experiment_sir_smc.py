@@ -3,6 +3,7 @@ from scripts.model.simple_prism_rf_model import SimpleRfModel
 from scripts.mc.smc_rf_uniform_kernel import SmcRfUniformKernel
 from scripts.model.simple_prism_sim_model import SimpleSimModel
 from scripts.mc.abc_smc_smc_uniform_kernel import AbcSmcSmcUniformKernel
+import scripts.config as gCfg
 
 import sys
 from typing import Tuple, List
@@ -139,13 +140,19 @@ if __name__ == "__main__":
     for cfg in ExperimentSirConfig.get_all_config_names():
         print(cfg)
 
-    if len(sys.argv) != 3:
+    if len(sys.argv) > 4:
         raise ValueError(f"Invalid number of arguments {len(sys.argv)}")
 
     mode = EvaluationMode.Simulation
     mode_str = sys.argv[1]
     if mode_str == "sim":
         mode = EvaluationMode.Simulation
+        if len(sys.argv) == 4:
+            sim_count = int(sys.argv[3])
+            logging.info(
+                f"{str(datetime.now())} Manually set simulation count: {sim_count}"
+            )
+            gCfg.set_per_bscc_sampling(sim_count)
     elif mode_str == "rf":
         mode = EvaluationMode.RationalFunction
     else:
