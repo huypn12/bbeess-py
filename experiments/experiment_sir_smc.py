@@ -135,10 +135,43 @@ def main(cfg_name: str, mode: EvaluationMode):
     experiment.run()
 
 
+def manual():
+    cfg = ExperimentSirConfig.get_config("sir_15_1_0_a_few")
+    gCfg.set_abc_threshold_decreasing_factor(0.8)
+    gCfg.set_per_bscc_sampling(10000)
+    smc_trace_len = cfg["smc_trace_len"]
+    smc_pertubation_len = cfg["smc_pertubation_len"]
+    smc_mh_trace_len = cfg["smc_mh_trace_len"]
+    abc_threshold = cfg["abc_threshold"]
+    prism_model_file = cfg["prism_model_file"]
+    prism_props_file = cfg["prism_props_file"]
+    interval = cfg["interval"]
+    true_param = cfg["true_param"]
+    observed_data = cfg["observed_data"]
+    observed_labels = cfg["observed_labels"]
+    experiment = ExperimentSirSmc(
+        mode=EvaluationMode.Simulation,
+        smc_trace_len=smc_trace_len,
+        smc_pertubation_len=smc_pertubation_len,
+        smc_mh_trace_len=smc_mh_trace_len,
+        abc_threshold=abc_threshold,
+        prism_model_file=prism_model_file,
+        prism_props_file=prism_props_file,
+        interval=interval,
+        true_param=true_param,
+        observed_data=observed_data,
+        observed_labels=observed_labels,
+    )
+    experiment.run()
+
+
 if __name__ == "__main__":
     print("Supported config entries: ")
     for cfg in ExperimentSirConfig.get_all_config_names():
         print(cfg)
+
+    if len(sys.argv) == 2:
+        manual()
 
     if len(sys.argv) > 4:
         raise ValueError(f"Invalid number of arguments {len(sys.argv)}")
@@ -159,6 +192,6 @@ if __name__ == "__main__":
         raise ValueError(f"Invalid evaluation mode {sys.argv[1]}")
 
     cfg_name = sys.argv[2]
-    main(cfg_name, mode)
+    main(cfg_name=cfg_name, mode=mode)
 
     logging.shutdown()

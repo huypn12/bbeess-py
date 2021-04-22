@@ -165,6 +165,9 @@ class AbcSmcSmcUniformKernel(object):
             logging.info(
                 f"{str(datetime.now())} Finish kernel {t} threshold={self.abc_threshold}"
             )
+            self.abc_threshold = (
+                self.abc_threshold * gCfg.abc_threshold_decreasing_factor()
+            )
         self._estimate_point()
         self._inverse_weight()
 
