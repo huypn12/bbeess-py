@@ -15,7 +15,7 @@ class EvaluationMode(IntEnum):
     Simulation = 2
 
 
-class ExperimentSirSmc(object):
+class ConfigVerification(object):
     def __init__(
         self,
         smc_trace_len: int,

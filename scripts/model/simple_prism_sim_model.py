@@ -152,6 +152,13 @@ class SimpleSimModel(AbstractSimulationModel):
         ).at(initial_state)
         return result
 
+    def check_unbounded_smc(self, particle: np.array):
+        self.prism_apmc_executor.set_prism_args(simconf=0.05, simapprox=0.005)
+        result = self.prism_apmc_executor.exec(
+            self._model_params_to_prism_cmd_args(particle)
+        )
+        return result
+
     def simulate(self, particle: np.array, sample_count: int):
         model_params = self.model.collect_probability_parameters()
         assert len(particle) == len(model_params)
