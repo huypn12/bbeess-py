@@ -137,10 +137,10 @@ def main(cfg_name: str, mode: EvaluationMode):
 
 def manual():
     cfg = ExperimentSirConfig.get_config("sir_15_1_0_a_few")
-    gCfg.set_abc_threshold_decreasing_factor(0.8)
+    gCfg.set_abc_threshold_decreasing_factor(0.95)
     gCfg.set_per_bscc_sampling(10000)
     smc_trace_len = cfg["smc_trace_len"]
-    smc_pertubation_len = cfg["smc_pertubation_len"]
+    smc_pertubation_len = 10
     smc_mh_trace_len = cfg["smc_mh_trace_len"]
     abc_threshold = cfg["abc_threshold"]
     prism_model_file = cfg["prism_model_file"]

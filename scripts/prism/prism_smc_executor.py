@@ -162,12 +162,13 @@ class PrismSmcApmcExecutor(PrismSmcExecutor):
     ) -> None:
         super().__init__(prism_model_file, prism_props_file)
         self.result: float = -1
+        self.valid: bool = False
 
     def _set_result(self, result_str):
         if "false" in result_str.lower():
-            self.result = False
+            self.valid = False
         elif "true" in result_str.lower():
-            self.result = True
+            self.valid = True
         else:
             raise ValueError("Unsupported value {}".format(result_str.lower()))
 
@@ -175,7 +176,7 @@ class PrismSmcApmcExecutor(PrismSmcExecutor):
         details_str: str = line.replace(
             PrismSmcCmdResultEntry.result_details.value, ""
         ).strip()
-        self.simsamples = int(details_str.split(" ")[0])
+        self.result = float(details_str.split(" ")[2].replace("|", ""))
 
     def _get_prism_args(self, model_consts: Optional[str] = None) -> List[str]:
         base_args = self._get_base_prism_args(model_consts)

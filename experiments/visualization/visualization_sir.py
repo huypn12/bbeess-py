@@ -8,6 +8,7 @@ import seaborn as sns
 import experiments.results.sir_5_1_0 as sir_5
 import experiments.results.sir_10_1_0 as sir_10
 import experiments.results.sir_15_1_0 as sir_15
+import experiments.results.sir_15_1_0_a_few_mod as sir_15_a_few_mod
 
 
 def visualize_data(plot_name, data_hist, hist_label):
@@ -184,6 +185,17 @@ def visualize_sir1510():
     visualize_dist("sir1510_abcsmc", true_p, est_p, alpha, beta, llh)
 
 
+def manual():
+    true_p = np.array(sir_15.true_param)
+    particles = np.array(sir_15_a_few_mod.particle_trace_sim)
+    alpha = [p[0] for p in particles]
+    beta = [p[1] for p in particles]
+    llh = np.array(sir_15_a_few_mod.particle_weight_sim)
+    llh = 1 / llh
+    est_p = np.array(sir_15_a_few_mod.particle_mean_sim)
+    visualize_dist("sir1510_merged_bscc_abcsmc", true_p, est_p, alpha, beta, llh)
+
+
 def main():
     visualize_sir510()
     visualize_sir1010()
@@ -191,4 +203,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # main()
+    manual()
