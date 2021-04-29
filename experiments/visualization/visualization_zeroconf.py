@@ -22,8 +22,9 @@ def visualize_data(plot_name, data_hist, hist_label):
     ax = fig.add_subplot(111)
     ax.set_xlabel("Distribution over BSCCs", fontsize=12)
     ax.set_ylabel("Number of samples.", fontsize=12)
-    plt.xticks(rotation=90)
-    ax.bar(hist_label, data_hist, alpha=0.75, width=0.5)
+    plt.xticks(rotation=45)
+    ax.bar(hist_label, data_hist, alpha=0.75, width=0.75)
+    plt.tight_layout()
     plt.savefig(plot_name)
 
 
@@ -33,53 +34,71 @@ def visualize_llh(plot_name, truep, estp, x, y, t):
     ax.set_xlabel("p", fontsize=12)
     ax.set_ylabel("q", fontsize=12)
     ax.grid(True, linestyle="-", color="0.75")
-    ax.plot(
+    (true_point,) = ax.plot(
         truep[0],
         truep[1],
         color="green",
         marker="x",
         markersize=12,
+        linestyle="None",
     )
-    ax.plot(
+    (estimated_point,) = ax.plot(
         estp[0],
         estp[1],
         color="red",
         marker="x",
         markersize=12,
+        linestyle="None",
     )
     points = ax.scatter(x, y, s=20, c=t, marker="o", cmap=cm.jet)
-    plt.colorbar(points, label="ln(P(D_obs|(alpha, beta)))")
+    plt.colorbar(points, label="Log-likelihood to the observed data")
+    plt.legend(
+        [true_point, estimated_point],
+        ["True parameter", "Estimated parameter"],
+        frameon=True,
+        loc="best",
+        prop={"size": 8},
+    )
     plt.savefig(plot_name)
 
 
 def visualize_dist(plot_name, truep, estp, x, y, t):
     fig = plt.figure(figsize=(6, 6))
     ax = fig.add_subplot(111)
-    ax.set_xlabel("alpha", fontsize=12)
-    ax.set_ylabel("beta", fontsize=12)
+    ax.set_xlabel("p", fontsize=12)
+    ax.set_ylabel("q", fontsize=12)
     ax.grid(True, linestyle="-", color="0.75")
-    ax.plot(
+    (true_point,) = ax.plot(
         truep[0],
         truep[1],
         color="green",
         marker="x",
         markersize=12,
+        linestyle="None",
     )
-    ax.plot(
+    (estimated_point,) = ax.plot(
         estp[0],
         estp[1],
         color="red",
         marker="x",
         markersize=12,
+        linestyle="None",
+    )
+    plt.legend(
+        [true_point, estimated_point],
+        ["True parameter", "Estimated parameter"],
+        frameon=True,
+        loc="best",
+        prop={"size": 8},
     )
     points = ax.scatter(x, y, s=20, c=t, marker="o", cmap=cm.jet)
-    plt.colorbar(points, label="l2_dist(S_obs, S_sim)")
+    plt.colorbar(points, label="Euclidean distance between simulated and observed data")
     plt.savefig(plot_name)
 
 
 def visualize_zeroconf_4():
     visualize_data(
-        "ZeroConf (4 tries) data",
+        "zeroconf4_data",
         np.array([41, 9959]),
         [
             "Failed",

@@ -36,6 +36,12 @@ class ResultValidation:
         logging.info(
             f"{str(datetime.now())} Target property: {rf_model.check_prop_bounded}"
         )
+        dobs = config["observed_data"]
+        logging.info(f"{str(datetime.now())} Observed data: { dobs}")
+        sat_p = rf_model.check_unbounded(true_param)
+        logging.info(
+            f"{str(datetime.now())} True param satisfaction probability: {sat_p}"
+        )
         estimated_param_rf = config["estimated"][0]
         sat_p = rf_model.check_unbounded(estimated_param_rf)
         logging.info(f"{str(datetime.now())} RF satisfaction probability: {sat_p}")
@@ -43,6 +49,14 @@ class ResultValidation:
             prism_model_file, prism_props_file, config["observed_labels"]
         )
         estimated_param_sim = config["estimated"][1]
+        sat_p = sim_model.check_unbounded(true_param)
+        logging.info(
+            f"{str(datetime.now())} True param Eval satisfaction probability: {sat_p}"
+        )
+        sat_p = sim_model.check_unbounded(estimated_param_rf)
+        logging.info(f"{str(datetime.now())} RF Eval satisfaction probability: {sat_p}")
+        sat_p = sim_model.check_unbounded_smc(estimated_param_rf)
+        logging.info(f"{str(datetime.now())} RF Sim satisfaction probability: {sat_p}")
         sat_p = sim_model.check_unbounded(estimated_param_sim)
         logging.info(f"{str(datetime.now())} Sim satisfaction probability: {sat_p}")
         sat_p = sim_model.check_unbounded_smc(estimated_param_sim)
@@ -166,7 +180,7 @@ class ResultValidation:
                 ],
             },
             "sir_5_1_0": {
-                "estimated": np.array([[0.025473, 0.067613], [0.023077, 0.064812]]),
+                "estimated": np.array([[0.025473, 0.067613], [0.02675003, 0.06898774]]),
                 "prism_model_file": "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_5_1_0.pm",
                 "prism_props_file": "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_5_1_0.pctl",
                 "true_param": np.array([0.03405521326944327, 0.08773454035144489]),
@@ -203,7 +217,9 @@ class ResultValidation:
                 ],
             },
             "sir_15_1_0": {
-                "estimated": np.array([[0.023077, 0.064812], [0.01758384, 0.06535699]]),
+                "estimated": np.array(
+                    [[0.01002178, 0.06722998], [0.01244393, 0.06586205]]
+                ),
                 "prism_model_file": "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_15_1_0.pm",
                 "prism_props_file": "/home/huypn12/Works/mcss/bbeess-py/data/prism/sir_15_1_0.pctl",
                 "true_param": np.array([0.011499276183591657, 0.06211051606863456]),
