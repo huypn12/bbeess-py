@@ -1,0 +1,3 @@
+P>=0 [true U "ok"]
+P=? [ F "err" ]
+P=? [ F "ok"  ]

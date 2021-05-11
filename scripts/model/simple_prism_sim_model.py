@@ -1,5 +1,6 @@
 from scripts.model.abstract_model import AbstractSimulationModel
 from scripts.prism.prism_smc_executor import PrismSmcSprtExecutor, PrismSmcApmcExecutor
+import scripts.config as gCfg
 
 from typing import List, Optional, Dict, Tuple, Any, Type
 
@@ -135,6 +136,8 @@ class SimpleSimModel(AbstractSimulationModel):
         )
 
     def check_bounded(self, particle: np.array):
+        if not gCfg.has_synthesis():
+            return True
         self.prism_sprt_executor.set_prism_args(
             simwidth=0.005,
             simconf=0.05,

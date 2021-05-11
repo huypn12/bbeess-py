@@ -55,7 +55,7 @@ class SmcRfUniformKernel(object):
 
     def _get_interval(self, sigma: Optional[float]) -> Tuple[float]:
         l, u = self.interval
-        if sigma is not None:
+        if sigma is None:
             return self.interval
         new_l, new_u = (l - sigma, u + sigma)
         new_l = l if new_l < l else new_l
@@ -129,8 +129,6 @@ class SmcRfUniformKernel(object):
 
     def run(self):
         self._init()
-        logging.info("INIT TRACE")
-        logging.info(self.particle_trace)
         for t in range(1, self.kernel_count):
             logging.info(f"{str(datetime.now())} START KERNEL {t}")
             # Correct
@@ -200,13 +198,13 @@ class SmcRfUniformKernel(object):
                 mh_particle_trace[mh_particle_idx] = candidate_particle
                 mh_particle_weights[mh_particle_idx] = candidate_log_llh
                 mh_particle_idx += 1
-            else:
-                acceptance_rate = 1e-1
-                u = np.random.uniform(0, 1)
-                if u < acceptance_rate:
-                    mh_particle_trace[mh_particle_idx] = candidate_particle
-                    mh_particle_weights[mh_particle_idx] = candidate_log_llh
-                    mh_particle_idx += 1
+            # else:
+            #     acceptance_rate = 1e-1
+            #     u = np.random.uniform(0, 1)
+            #     if u < acceptance_rate:
+            #         mh_particle_trace[mh_particle_idx] = candidate_particle
+            #         mh_particle_weights[mh_particle_idx] = candidate_log_llh
+            #         mh_particle_idx += 1
         mh_particle_idx -= 1
         return mh_particle_trace[mh_particle_idx], mh_particle_weights[mh_particle_idx]
 
