@@ -5,13 +5,23 @@ class ConfigKey(Enum):
     is_bee_model = "is_bee_model"
     per_bscc_sampling = "per_bscc_sampling"
     abc_threshold_decreasing_factor = "abc_threshold_decreasing_factor"
+    has_synthesis = "has_synthesis"
 
 
 _config_dict = {
     ConfigKey.is_bee_model.value: False,
     ConfigKey.per_bscc_sampling.value: 1000,
-    ConfigKey.abc_threshold_decreasing_factor: 1,
+    ConfigKey.abc_threshold_decreasing_factor.value: 1,
+    ConfigKey.has_synthesis.value: True,
 }
+
+
+def has_synthesis():
+    return _config_dict[ConfigKey.has_synthesis.value]
+
+
+def set_has_synthesis(b: bool):
+    _config_dict[ConfigKey.has_synthesis.value] = b
 
 
 def is_bee_model():
@@ -26,8 +36,8 @@ def abc_threshold_decreasing_factor():
     return _config_dict[ConfigKey.abc_threshold_decreasing_factor.value]
 
 
-def set_bee_model():
-    _config_dict[ConfigKey.is_bee_model.value] = False
+def set_bee_model(b: bool):
+    _config_dict[ConfigKey.is_bee_model.value] = b
 
 
 def unset_bee_model():

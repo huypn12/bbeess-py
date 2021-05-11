@@ -1,9 +1,11 @@
 from scripts.model.abstract_model import AbstractRationalModel
+import scripts.config as gCfg
 
 from typing import List, Optional, Dict, Tuple, Any, Type
 import stormpy
 import stormpy.core
 import stormpy.pars
+import pycarl
 
 import numpy as np
 
@@ -99,6 +101,8 @@ class SimpleRfModel(AbstractRationalModel):
         return instantiated_model
 
     def check_bounded(self, particle: np.array):
+        if not gCfg.has_synthesis():
+            return True
         model_parameters = self.model.collect_probability_parameters()
         point = dict()
         for i, p in enumerate(model_parameters):
@@ -144,6 +148,6 @@ class SimpleRfModel(AbstractRationalModel):
             point[p] = stormpy.RationalRF(particle[i])
         P = [float(rf.evaluate(point)) for rf in self.obs_rf]
         log_llh = 0
-        for i in range(0, len(particle)):
+        for i in range(0, len(P)):
             log_llh += y_obs[i] * np.log(P[i])
         return log_llh

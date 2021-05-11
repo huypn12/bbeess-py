@@ -59,7 +59,7 @@ class AbcSmcSmcUniformKernel(object):
 
     def _get_interval(self, sigma: Optional[float]) -> Tuple[float]:
         l, u = self.interval
-        if sigma is not None:
+        if sigma is None:
             return self.interval
         new_l, new_u = (l - sigma, u + sigma)
         new_l = l if new_l < l else new_l

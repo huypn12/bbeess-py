@@ -53,16 +53,16 @@ class FindTrueParams(object):
 def main():
     configs = [
         (
-            "/home/huypn12/Works/mcss/bbeess-py/data/prism/zeroconf_4.pm",
-            "/home/huypn12/Works/mcss/bbeess-py/data/prism/zeroconf_4.pctl",
+            "/home/huypn12/Works/mcss/bbeess-py/data/prism/zeroconf_10.pm",
+            "/home/huypn12/Works/mcss/bbeess-py/data/prism/zeroconf_10_1.pctl",
             (0, 1),
             10000,
         ),
         (
             "/home/huypn12/Works/mcss/bbeess-py/data/prism/zeroconf_10.pm",
-            "/home/huypn12/Works/mcss/bbeess-py/data/prism/zeroconf_10.pctl",
+            "/home/huypn12/Works/mcss/bbeess-py/data/prism/zeroconf_10_1.pctl",
             (0, 1),
-            10000,
+            200,
         ),
     ]
 
