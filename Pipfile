@@ -11,10 +11,7 @@ black = "*"
 numpy = "*"
 scipy = "*"
 matplotlib = "*"
-stormpy = {editable = true, git = "https://github.com/moves-rwth/stormpy.git@1.6.3"}
-
-[requires]
-python_version = "3.8"
+stormpy = {editable = true, git = "https://github.com/moves-rwth/stormpy.git"}
 
 [pipenv]
 allow_prereleases = true
