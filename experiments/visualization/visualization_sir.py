@@ -119,7 +119,7 @@ def visualize_sir510():
     alpha = [p[0] for p in particles]
     beta = [p[1] for p in particles]
     llh = np.array(sir_5.particle_weight_sim)
-    llh = 1 / llh
+    # llh = 1 / llh
     est_p = np.array(sir_5.particle_mean_sim)
     visualize_dist("sir510_abcsmc", true_p, est_p, alpha, beta, llh)
 
@@ -157,7 +157,7 @@ def visualize_sir1010():
     alpha = [p[0] for p in particles]
     beta = [p[1] for p in particles]
     llh = np.array(sir_10.particle_weight_sim)
-    llh = 1 / llh
+    # llh = 1 / llh
     est_p = np.array(sir_10.particle_mean_sim)
     visualize_dist("sir1010_abcsmc", true_p, est_p, alpha, beta, llh)
 
@@ -200,7 +200,7 @@ def visualize_sir1510():
     alpha = [p[0] for p in particles]
     beta = [p[1] for p in particles]
     llh = np.array(sir_15.particle_weight_sim)
-    llh = 1 / llh
+    # llh = 1 / llh
     est_p = np.array(sir_15.particle_mean_sim)
     visualize_dist("sir1510_abcsmc", true_p, est_p, alpha, beta, llh)
 
