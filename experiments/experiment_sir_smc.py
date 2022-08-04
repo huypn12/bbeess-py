@@ -98,7 +98,11 @@ class ExperimentSirSmc(object):
         logging.info(f"{str(datetime.now())} Particle trace")
         logging.info(trace)
         logging.info(f"{str(datetime.now())} Particle weights")
+        with open(f"{self.prism_model_file}_{self.mode.name}_trace.npy", "wb") as fptr:
+            np.save(fptr, trace)
         logging.info(weights)
+        with open(f"{self.prism_model_file}_{self.mode.name}_weight.npy", "wb") as fptr:
+            np.save(fptr, trace)
         logging.info(f"{str(datetime.now())} Particle mean")
         logging.info(particle_mean)
         distance = np.linalg.norm(particle_mean - self.true_param)
