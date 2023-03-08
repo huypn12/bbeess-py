@@ -71,7 +71,7 @@ class SirGenerator(object):
             print(f"Append({new_node}) weight {node.s}a")
             self.node_list[new_node.node_id] = new_node
             self.adj_list[node.node_id].append((new_node.node_id, (node.s, 0)))
-            self.rates.append((node.s, 0))
+            self.rates.append((node.s*node.i, 0))
             self._expand(new_node)
         if self._is_r2_applicable(node):
             new_node = SirNode(node.s, node.i - 1, node.r + 1)
